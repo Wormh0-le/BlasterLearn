@@ -10,10 +10,12 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
 	NumPublicConnections = NumberOfPublicConnections;
 	MatchType = TypeOfMatch;
-	AddToViewport();
+	
+	SetRenderScale({0.5, 0.5});
+	SetRenderOpacity(0.7f);
 	SetVisibility(ESlateVisibility::Visible);
 	SetIsFocusable(true);
-	SetRenderScale({0.75, 0.75});
+	AddToViewport();
 
 	UWorld* World = GetWorld();
 	if(World) {
