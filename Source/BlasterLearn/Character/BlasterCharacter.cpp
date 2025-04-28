@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "BlasterLearn/Weapon/Weapon.h"
 
 
 // Sets default values
@@ -36,7 +37,7 @@ ABlasterCharacter::ABlasterCharacter()
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ABlasterCharacter, OverlappingWeapon);
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 }
 
 
@@ -45,6 +46,16 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+// Called every frame
+void ABlasterCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (OverlappingWeapon) {
+		OverlappingWeapon->ShowPickUpWidget(true);
+	}
 }
 
 void ABlasterCharacter::MoveForward(float Value)
@@ -75,13 +86,6 @@ void ABlasterCharacter::Turn(float Value)
 void ABlasterCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value);
-}
-
-// Called every frame
-void ABlasterCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input

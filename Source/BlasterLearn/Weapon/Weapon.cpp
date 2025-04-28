@@ -38,22 +38,26 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 
 	if (HasAuthority()) {
+		// server-side handle collision 
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
-
-		if (PickUpWidget) {
-			PickUpWidget->SetVisibility(false);
-		}
+	}
+	if (PickUpWidget) {
+		PickUpWidget->SetVisibility(false);
 	}
 	
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// if other actor is blasterCharacter, set overlapping weapon.
+	// Overlapping weapon is chaned so it will be replicated.
+	// At the same time, blasterCharacter will have overlapping weapon, 
+	// so weapon will show widget
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-	if (BlasterCharacter && PickUpWidget) {
-		PickUpWidget->SetVisibility(true);
+	if (BlasterCharacter) {
+		BlasterCharacter->SetOverlappingWeapon(this);
 	}
 }
 
@@ -62,5 +66,12 @@ void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWeapon::ShowPickUpWidget(bool bShowPickupWidget)
+{
+	if (PickUpWidget) {
+		PickUpWidget->SetVisibility(bShowPickupWidget);
+	}
 }
 

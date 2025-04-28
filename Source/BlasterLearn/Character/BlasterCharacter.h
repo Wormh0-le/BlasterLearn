@@ -46,6 +46,5 @@ private:
 	UPROPERTY(Replicated)
 	class AWeapon* OverlappingWeapon;
 public:	
-	
-
+	FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon) { OverlappingWeapon = Weapon; }
 };
