@@ -91,6 +91,15 @@ void ABlasterCharacter::OnRep_OverlappingWeapon()
 	}
 }
 
+void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	OverlappingWeapon = Weapon;
+	// if has on the server
+	if (IsLocallyControlled()) {
+		OverlappingWeapon->ShowPickUpWidget(true);
+	}
+}
+
 // Called to bind functionality to input
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
