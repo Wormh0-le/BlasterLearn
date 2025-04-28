@@ -52,10 +52,6 @@ void ABlasterCharacter::BeginPlay()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (OverlappingWeapon) {
-		OverlappingWeapon->ShowPickUpWidget(true);
-	}
 }
 
 void ABlasterCharacter::MoveForward(float Value)
@@ -86,6 +82,13 @@ void ABlasterCharacter::Turn(float Value)
 void ABlasterCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value);
+}
+
+void ABlasterCharacter::OnRep_OverlappingWeapon()
+{
+	if (OverlappingWeapon) {
+		OverlappingWeapon->ShowPickUpWidget(true);
+	}
 }
 
 // Called to bind functionality to input
