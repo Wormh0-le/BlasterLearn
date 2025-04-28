@@ -47,7 +47,7 @@ private:
 	class AWeapon* OverlappingWeapon;
 
 	UFUNCTION()
-	void OnRep_OverlappingWeapon();
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
