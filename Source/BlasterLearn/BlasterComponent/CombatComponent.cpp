@@ -2,6 +2,8 @@
 
 
 #include "CombatComponent.h"
+#include "BlasterLearn/Weapon/Weapon.h"
+#include "BlasterLearn/Character/BlasterCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values for this component's properties
@@ -37,7 +39,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	
-	EquippedWeapon == WeaponToEquip;
+	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket) {

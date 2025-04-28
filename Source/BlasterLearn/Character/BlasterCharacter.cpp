@@ -3,6 +3,12 @@
 
 #include "BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
+#include "BlasterLearn/Weapon/Weapon.h"
+#include "BlasterLearn/BlasterComponent/CombatComponent.h"
 
 
 
@@ -92,8 +98,13 @@ void ABlasterCharacter::LookUp(float Value)
 
 void ABlasterCharacter::EquipeButtonPressed()
 {
-	if (Combat && HasAuthority()) {
-		Combat->EquipWeapon(OverlappingWeapon);
+	if (Combat) {
+		if (HasAuthority()) {
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else {
+			ServerEquippedButtonPressed();
+		}
 	}
 }
 
@@ -104,6 +115,13 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 	if (OverlappingWeapon) {
 		OverlappingWeapon->ShowPickUpWidget(true);
+	}
+}
+
+void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
+{
+	if (Combat) {
+		Combat->EquipWeapon(OverlappingWeapon);
 	}
 }
 

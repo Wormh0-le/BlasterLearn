@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+
 #include "CombatComponent.generated.h"
-#include "BlasterLearn/Weapon/Weapon.h"
-#include "BlasterLearn/Character/BlasterCharacter.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -23,7 +22,7 @@ public:
 
 	friend class ABlasterCharacter;
 
-	void EquipWeapon(AWeapon* WeaponToEquip);
+	void EquipWeapon(class AWeapon* WeaponToEquip);
 
 protected:
 	// Called when the game starts
@@ -31,7 +30,7 @@ protected:
 
 private:
 
-	ABlasterCharacter* Character;
-	AWeapon* EquippedWeapon;
+	class ABlasterCharacter* Character;
+	class AWeapon* EquippedWeapon;
 		
 };
