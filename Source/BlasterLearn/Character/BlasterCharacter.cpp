@@ -96,8 +96,14 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
+	// server leave logic
+	// actually lastWeapon, server not On rep notify
+	if (OverlappingWeapon) {
+		OverlappingWeapon->ShowPickUpWidget(false);
+	}
+	// will replicted to client -> OnRep_OverLappingWeapon
 	OverlappingWeapon = Weapon;
-	// if has on the server
+	// server enter logic
 	if (IsLocallyControlled()) {
 		if (OverlappingWeapon) {
 			OverlappingWeapon->ShowPickUpWidget(true);
