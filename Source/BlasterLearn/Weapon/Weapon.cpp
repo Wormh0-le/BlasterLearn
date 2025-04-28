@@ -2,9 +2,9 @@
 
 
 #include "Weapon.h"
-#include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "BlasterLearn/Character/BlasterCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -70,11 +70,42 @@ void AWeapon::OnShpereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 }
 
+void AWeapon::OnReq_WeaponState()
+{
+	// client
+	switch (WeaponState) {
+	case EWeaponState::EWS_Equipped:
+		ShowPickUpWidget(false);
+		break;
+	}
+}
+
+void AWeapon::SetWeaponState(EWeaponState state)
+{
+	WeaponState = state;
+
+	switch (WeaponState) {
+	case EWeaponState::EWS_Equipped:
+		ShowPickUpWidget(false);
+		// server side
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	}
+	
+}
+
 // Called every frame
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeapon, WeaponState);
 }
 
 void AWeapon::ShowPickUpWidget(bool bShowPickupWidget)

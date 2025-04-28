@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/SphereComponent.h"
 #include "Weapon.generated.h"
 
 
@@ -29,6 +30,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	void ShowPickUpWidget(bool bShowPickupWidget);
 
 protected:
@@ -43,16 +46,21 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	USkeletalMeshComponent* WeaponMesh;
+	class USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class USphereComponent* AreaSphere;
+	USphereComponent* AreaSphere;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(ReplicatedUsing = OnReq_WeaponState, VisibleAnywhere)
 	EWeaponState WeaponState;
+
+	UFUNCTION()
+	void OnReq_WeaponState();
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickUpWidget;
 public:	
-	FORCEINLINE void SetWeaponState(EWeaponState state) { WeaponState = state; }
+	void SetWeaponState(EWeaponState state);
+
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 };
