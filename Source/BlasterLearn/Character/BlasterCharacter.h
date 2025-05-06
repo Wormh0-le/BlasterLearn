@@ -38,6 +38,7 @@ protected:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void AimOffset(float DeltaTime);
 	
 
 private:
@@ -62,8 +63,15 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerEquippedButtonPressed();
 
+	float AO_Yaw;
+	float AO_Pitch;
+
+	FRotator StartingAimRotation;
+
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
 	bool IsAimming();
+	FORCEINLINE float Get_AO_Yaw() const { return AO_Yaw; }
+	FORCEINLINE float Get_AO_Pitch() const { return AO_Pitch; }
 };
