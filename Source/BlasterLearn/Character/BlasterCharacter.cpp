@@ -43,6 +43,8 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 850.f);
+
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
@@ -68,6 +70,15 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ABlasterCharacter::Jump()
+{
+	if (bIsCrouched) {
+		UnCrouch();
+	} else {
+		Super::Jump();
+	}
 }
 
 // Called every frame
@@ -252,7 +263,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABlasterCharacter::Jump);
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ABlasterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &ABlasterCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &ABlasterCharacter::Turn);

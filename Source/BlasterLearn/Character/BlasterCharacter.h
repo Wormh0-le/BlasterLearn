@@ -29,6 +29,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void Jump() override;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
