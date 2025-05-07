@@ -5,6 +5,7 @@
 #include "Components/WidgetComponent.h"
 #include "BlasterLearn/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Animation/AnimationAsset.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -112,6 +113,14 @@ void AWeapon::ShowPickUpWidget(bool bShowPickupWidget)
 {
 	if (PickUpWidget) {
 		PickUpWidget->SetVisibility(bShowPickupWidget);
+	}
+}
+
+void AWeapon::Fire()
+{
+	if (FireAnimation)
+	{
+		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
 }
 
