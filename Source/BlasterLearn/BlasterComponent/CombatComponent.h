@@ -39,6 +39,8 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
 private:
 
 	class ABlasterCharacter* Character;

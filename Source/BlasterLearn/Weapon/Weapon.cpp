@@ -54,7 +54,7 @@ void AWeapon::BeginPlay()
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// if other actor is blasterCharacter, set overlapping weapon.
-	// Overlapping weapon is chaned so it will be replicated.
+	// Overlapping weapon is changed so it will be replicated.
 	// At the same time, blasterCharacter will have overlapping weapon, 
 	// so weapon will show widget
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
