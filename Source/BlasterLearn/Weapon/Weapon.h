@@ -34,7 +34,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void ShowPickUpWidget(bool bShowPickupWidget);
-	void Fire();
+	virtual void Fire(const FVector& HitTarget);
 
 protected:
 	// Called when the game starts or when spawned
