@@ -68,7 +68,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation()
+void UCombatComponent::MulticastFire_Implementation()
 {
 	if (EquippedWeapon == nullptr)	return;
 	if (Character)
@@ -76,6 +76,11 @@ void UCombatComponent::ServerFire_Implementation()
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire();
 	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire();
 }
 
 // Called every frame
