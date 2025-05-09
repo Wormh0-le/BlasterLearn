@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-
+#include "BlasterLearn/HUD/BlasterHUD.h"
 #include "CombatComponent.generated.h"
 
 
@@ -75,6 +75,8 @@ private:
 	float CrosshairInAirFactor;
 	float CrosshairAimFactor;
 	float CrosshairShootingFactor;
+
+	FHUDPackage HUDPackage;
 
 	FVector HitTarget;
 
