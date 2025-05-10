@@ -46,7 +46,6 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 	
 	if (Character && Character->IsLocallyControlled()) {
 		FHitResult HitResult;
@@ -56,6 +55,51 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		SetHUDCrosshairs(DeltaTime);
 		InterpFOV(DeltaTime);
 	}
+}
+
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport) {
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
+
+	if (bScreenToWorld) {
+		FVector Start = CrosshairWorldPosition;
+		if (Character) {
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 50.f);
+			//DrawDebugSphere(GetWorld(), Start, 5.f, 12, FColor::Red, false);
+		}
+
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
+
+		GetWorld()->LineTraceSingleByChannel(
+			TraceHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility
+		);
+		if (!TraceHitResult.bBlockingHit){
+			TraceHitResult.ImpactPoint = End;
+		}
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) {
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+		} else {
+			HUDPackage.CrosshairsColor = FLinearColor::Green;
+		}
+	}
+
 }
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
@@ -123,6 +167,64 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 	}
 }
 
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr)	return;
+	Character->GetWorldTimerManager().SetTimer(
+		FireTimer,
+		this,
+		&UCombatComponent::FireTimerFinished,
+		EquippedWeapon->FireDelay
+	);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (EquippedWeapon == nullptr)	return;
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
+
+void UCombatComponent::Fire()
+{
+	if (bCanFire)
+	{
+		ServerFire(HitTarget);
+		if (EquippedWeapon) {
+			bCanFire = false;
+			CrosshairShootingFactor = 0.75f; 
+		}
+		StartFireTimer();	
+	}
+	
+}
+
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (EquippedWeapon == nullptr)	return;
+	if (Character)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MulticastFire(TraceHitTarget);
+}
+
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{
+	bFireButtonPressed = bPressed;
+	if (bFireButtonPressed)
+	{
+		Fire();
+	}
+}
 
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
@@ -151,89 +253,6 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-void UCombatComponent::FireButtonPressed(bool bPressed)
-{
-	bFireButtonPressed = bPressed;
-	if (bFireButtonPressed)
-	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);
-		
-		if (EquippedWeapon) {
-			CrosshairShootingFactor = 0.75f; 
-		}
-	}
-}
-
-void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
-{
-	FVector2D ViewportSize;
-	if (GEngine && GEngine->GameViewport) {
-		GEngine->GameViewport->GetViewportSize(ViewportSize);
-	}
-
-	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
-		UGameplayStatics::GetPlayerController(this, 0),
-		CrosshairLocation,
-		CrosshairWorldPosition,
-		CrosshairWorldDirection
-	);
-
-	if (bScreenToWorld) {
-		FVector Start = CrosshairWorldPosition;
-		if (Character) {
-			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
-			Start += CrosshairWorldDirection * (DistanceToCharacter + 50.f);
-			//DrawDebugSphere(GetWorld(), Start, 5.f, 12, FColor::Red, false);
-		}
-
-		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
-
-		GetWorld()->LineTraceSingleByChannel(
-			TraceHitResult,
-			Start,
-			End,
-			ECollisionChannel::ECC_Visibility
-		);
-		if (!TraceHitResult.bBlockingHit){
-			TraceHitResult.ImpactPoint = End;
-		}
-		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) {
-			HUDPackage.CrosshairsColor = FLinearColor::Red;
-		} else {
-			HUDPackage.CrosshairsColor = FLinearColor::Green;
-		}
-	}
-
-}
-
-void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	if (EquippedWeapon == nullptr)	return;
-	if (Character)
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-	}
-}
-
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MulticastFire(TraceHitTarget);
-}
-
-void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
-	DOREPLIFETIME(UCombatComponent, bAiming);
-}
-
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
@@ -250,5 +269,13 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	// Offset Yaw for Strafing
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
+}
+
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bAiming);
 }
 
