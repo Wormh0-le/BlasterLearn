@@ -12,6 +12,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterLearn/BlasterLearn.h"
+#include "BlasterLearn/PlayerController/BlasterPlayerController.h"
 
 
 
@@ -56,6 +57,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -92,6 +94,13 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
+
 
 void ABlasterCharacter::OnRep_ReplicatedMovement()
 {
@@ -104,8 +113,13 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	UpdateHUDHealth();
+	if (HasAuthority()) {
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
+	}
 }
+
 
 void ABlasterCharacter::Jump()
 {
@@ -325,10 +339,10 @@ void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 	}
 }
 
-void ABlasterCharacter::MultiCastHit_Implementation()
-{
-	PlayHitReactMontage();
-}
+//void ABlasterCharacter::MultiCastHit_Implementation()
+//{
+//	PlayHitReactMontage();
+//}
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
 {
@@ -351,6 +365,20 @@ float ABlasterCharacter::CalculateSpeed()
 	FVector Velocity = GetVelocity();
 	Velocity.Z = 0.f;
 	return Velocity.Size();
+}
+
+void ABlasterCharacter::OnRep_Health()
+{
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
+
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController) {
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
