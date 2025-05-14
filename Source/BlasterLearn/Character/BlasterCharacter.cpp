@@ -14,6 +14,7 @@
 #include "BlasterLearn/BlasterLearn.h"
 #include "BlasterLearn/PlayerController/BlasterPlayerController.h"
 #include "BlasterLearn/GameMode/BlasterGameMode.h"
+#include "TimerManager.h"
 
 
 
@@ -120,16 +121,30 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	}
 }
 
-//void ABlasterCharacter::Elim()
-//{
-//	bElimmed = true;
-//	PlayElimMontage();
-//}
+void ABlasterCharacter::Elim()
+{
+	MultiCastElim();
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
 
-void ABlasterCharacter::Elim_Implementation()
+}
+
+void ABlasterCharacter::MultiCastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
+}
+
+void ABlasterCharacter::ElimTimerFinished()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (BlasterGameMode) {
+		BlasterGameMode->RequestRespawn(this, Controller);
+	}
 }
 
 

@@ -35,8 +35,10 @@ public:
 
 	virtual void OnRep_ReplicatedMovement() override;
 
-	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastElim();
 
 protected:
 	// Called when the game starts or when spawned
@@ -130,6 +132,13 @@ private:
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimmed = false;
+
+	FTimerHandle ElimTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
 
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
