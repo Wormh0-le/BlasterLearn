@@ -35,7 +35,7 @@ public:
 
 	void ShowPickUpWidget(bool bShowPickupWidget);
 	virtual void Fire(const FVector& HitTarget);
-
+	void Dropped();
 	// Textures for the weapon crosshairs
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	class UTexture2D* CrosshairsCenter;
