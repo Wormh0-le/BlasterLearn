@@ -15,7 +15,9 @@
 #include "BlasterLearn/PlayerController/BlasterPlayerController.h"
 #include "BlasterLearn/GameMode/BlasterGameMode.h"
 #include "TimerManager.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 
 // Sets default values
@@ -161,6 +163,23 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 	// disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	if (ElimBotEffect)
+	{
+		FVector ElimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 25.f);
+		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(), ElimBotEffect,
+			ElimBotSpawnPoint,
+			GetActorRotation()
+		);
+	}
+	if (ElimBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(
+			this, ElimBotSound,
+			GetActorLocation()
+		);
+	}
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -190,6 +209,14 @@ void ABlasterCharacter::BeginPlay()
 	}
 }
 
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+	if (ElimBotComponent)
+	{
+		ElimBotComponent->DestroyComponent();
+	}
+}
 
 void ABlasterCharacter::Jump()
 {
