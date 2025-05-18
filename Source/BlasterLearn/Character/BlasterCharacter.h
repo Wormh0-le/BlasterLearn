@@ -47,6 +47,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	void UpdateHUDHealth();
+	// poll for any relevant classes and initialize HUD
+	void PollInit();
 	virtual void Jump() override;
 	void FireButtonPressed();
 	void FireButtonReleased();
@@ -174,6 +176,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ElimBotSound;
+
+	class ABlasterPlayerState* BlasterPlayerState;
 	
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
