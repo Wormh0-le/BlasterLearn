@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WeaponTypes.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -119,6 +120,9 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
 
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
+
 public:	
 	void SetWeaponState(EWeaponState state);
 
@@ -127,4 +131,5 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
+	FORCEINLINE EWeaponType GetWeaponType()	const { return WeaponType; }
 };
