@@ -29,6 +29,7 @@ public:
 	virtual void PostInitializeComponents() override;
 
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	void PlayElimMontage();
 
 	/*UFUNCTION(NetMulticast, Unreliable)
@@ -59,6 +60,7 @@ protected:
 	void LookUp(float Value);
 	void EquipeButtonPressed();
 	void CrouchButtonPressed();
+	void ReloadButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void CalculateAO_Pitch();
@@ -100,16 +102,20 @@ private:
 
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
-
+	
+	// Animation montages
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeapMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ElimMontage;
-
+	
 	void HideCameraIfCharacterClose();
 
 	UPROPERTY(EditAnywhere)
