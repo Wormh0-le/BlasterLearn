@@ -69,7 +69,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	bool bAutomatic = true;
 
-	void SetHUDAmmo();
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EquipSound;
 
 protected:
 	// Called when the game starts or when spawned
@@ -105,7 +106,7 @@ private:
 
 	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo;
-
+	
 	UFUNCTION()
 	void OnRep_Ammo();
 
@@ -133,6 +134,7 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
+	void SetHUDAmmo();
 	FORCEINLINE EWeaponType GetWeaponType()	const { return WeaponType; }
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
