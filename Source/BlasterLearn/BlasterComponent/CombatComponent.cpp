@@ -190,6 +190,10 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Fire();
 	}
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
+	}
 }
 
 bool UCombatComponent::CanFire()
@@ -326,6 +330,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 			EquippedWeapon->EquipSound,
 			Character->GetActorLocation()
 		);
+	}
+
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
 	}
 	// Offset Yaw for Strafing
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
