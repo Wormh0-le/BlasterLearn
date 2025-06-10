@@ -9,7 +9,7 @@
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	AddCharacterOverlay();
+	// AddCharacterOverlay(); move to match state transition
 }
 
 void ABlasterHUD::AddCharacterOverlay()

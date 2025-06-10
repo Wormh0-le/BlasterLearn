@@ -22,14 +22,17 @@ public:
 	void SetHUDMatchCountdown(float CountdownTime);
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void CheckTimeSync(float DeltaTime);
 
 	virtual float GetServerTime(); // Synced with server world clock
 	virtual void ReceivedPlayer() override; //synced with server clock as soon as possible when client is ready
+	void OnMatchStateSet(FName State);
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
+	void PollInit();
 
 	// sync time between client and server
 
@@ -48,8 +51,24 @@ protected:
 
 	float TimeSyncRunningTime = 0.f;
 private:
+	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
 	float MatchTime = 120.f;
 	uint32 CountdownInt = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
+	FName MatchState;
+
+	UFUNCTION()
+	void OnRep_MatchState();
+
+	UPROPERTY()
+	class UCharacterOverlay* CharacterOverlay;
+	bool bInitializeCharacterOverlay = false;
+
+	float HUDHealth;
+	float HUDMaxHealth;
+	float HUDScore;
+	int32 HUDDefeats;
 };
