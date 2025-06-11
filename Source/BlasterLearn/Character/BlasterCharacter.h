@@ -44,7 +44,10 @@ public:
 	void MultiCastElim();
 
 	virtual void Destroyed() override;
+	void RotateInPlace(float DeltaTime);
 
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -52,8 +55,8 @@ protected:
 	// poll for any relevant classes and initialize HUD
 	void PollInit();
 	virtual void Jump() override;
-	void FireButtonPressed();
-	void FireButtonReleased();
+	// void FireButtonPressed();
+	// void FireButtonReleased();
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -188,7 +191,9 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 	
-public:	
+public:
+	void FireButtonPressed();
+	void FireButtonReleased();
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
 	bool IsAimming();
@@ -203,4 +208,5 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 };
