@@ -7,6 +7,7 @@
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFrameWork/PlayerStart.h"
+#include "BlasterLearn/GameState/BlasterGameState.h"
 
 
 
@@ -65,11 +66,16 @@ void ABlasterGameMode::OnMatchStateSet()
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
+	if (AttackerController == nullptr || AttackerController->PlayerState == nullptr)	return;
+	
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
-	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
+	
+	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+		BlasterGameState->UpdateTopScore(AttackerPlayerState);
 	}
 	if (VictimPlayerState)
 	{
