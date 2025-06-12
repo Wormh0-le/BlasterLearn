@@ -60,7 +60,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	if (BlasterCharacter) {
 		BlasterCharacter->MultiCastHit();
 	}*/
-	Destroy();
+	Destroyed();
 }
 
 // Called every frame

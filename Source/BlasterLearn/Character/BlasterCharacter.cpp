@@ -184,6 +184,8 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 	// 	DisableInput(BlasterPlayerController);
 	// }
 	bDisableGameplay = true;
+	// avoid character fall through floor directly
+	GetCharacterMovement()->DisableMovement();
 	FireButtonReleased();
 	// disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
