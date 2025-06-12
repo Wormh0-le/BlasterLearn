@@ -251,6 +251,9 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 	if (bDisableGameplay)
 	{
 		bUseControllerRotationYaw = false;
+
+		GetCharacterMovement()->bOrientRotationToMovement = true; // It's false when equip weapon,so it need to be true otherwise character will rotate with controller when equip. Or
+		// GetCharacterMovement()->bUseControllerDesiredRotation = false;  seems that bUseControllerDesiredRotation will also override bOrientRotationToMovement
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 		return;
 	}
