@@ -17,6 +17,8 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = false;
 	// spawn only on server, and server have authority
 	bReplicates = true;
+	// avoid weapon location is inconsistent between server and client when dropped
+	SetReplicateMovement(true);
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(RootComponent);
@@ -216,7 +218,7 @@ void AWeapon::Dropped()
 
 void AWeapon::AddAmmo(int32 AmmoToAdd)
 {
-	Ammo = FMath::Clamp(Ammo - AmmoToAdd, 0, MagCapacity);
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
 	SetHUDAmmo();
 }
 

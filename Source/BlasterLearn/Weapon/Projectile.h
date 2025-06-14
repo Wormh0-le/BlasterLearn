@@ -37,11 +37,10 @@ protected:
 	// Called every frame
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
-private:
-
+	
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
-
+private:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* Tracer;
 
