@@ -2,6 +2,7 @@
 
 
 #include "Projectile.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
@@ -60,11 +61,65 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	Destroy( );
 }
 
+void AProjectile::SpawnTrailSystem()
+{
+	if (TrailSystem)
+	{
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,
+			GetRootComponent(),
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+}
+
+void AProjectile::ExplodeDamge()
+{
+	APawn* FiringPawn = GetInstigator();
+	if (FiringPawn) {
+		AController* FiringController = FiringPawn->GetController();
+		if (FiringController && HasAuthority()) {
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				this, // world context object
+				Damage,
+				10.f,
+				GetActorLocation(),
+				DamageInnerRadius,
+				DamageOuterRadius,
+				1.f,
+				UDamageType::StaticClass(),
+				TArray<AActor*>(),
+				this, // damage causer
+				FiringController // instigator controller
+			);
+		}
+	}
+}
+
 // Called every frame
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AProjectile::StartDestroyTimer()
+{
+	GetWorldTimerManager().SetTimer(
+		DestroyTimer,
+		this,
+		&AProjectile::DestroyTimerFinished,
+		DestroyTime
+	);
+}
+
+void AProjectile::DestroyTimerFinished()
+{
+	Destroy();
 }
 
 void AProjectile::Destroyed()
