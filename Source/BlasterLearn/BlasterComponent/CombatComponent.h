@@ -29,6 +29,11 @@ public:
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 	void Reload();
 
+	UFUNCTION(BlueprintCallable)
+	void ShotgunShellReload();
+
+	void JumpToShotgunEnd();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -161,4 +166,5 @@ private:
 	UFUNCTION()
 	void OnRep_CombatState();
 	void UpdateAmmoValues();
+	void UpdateShotgunAmmoValues();
 };
