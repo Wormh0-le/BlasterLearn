@@ -65,9 +65,17 @@ protected:
 	void HandleReload();
 
 	int32 AmountToReload();
-
+	
 	UFUNCTION(BlueprintCallable)
-	void FinishReloading();
+    void FinishReloading();
+
+	void ThrowGrenade();
+	
+	UFUNCTION(server, Reliable)
+	void ServerThrowGrenade();
+	
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
 private:
 
 	UPROPERTY()
