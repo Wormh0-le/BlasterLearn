@@ -27,6 +27,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
+
 	void Reload();
 
 	UFUNCTION(BlueprintCallable)
@@ -76,6 +77,12 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
+
+	void DropEquippedWeapon();
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void UpdateCarriedAmmo();
+	void PlayEquipWeaponSound();
+	void ReloadEmptyWeapon();
 private:
 
 	UPROPERTY()
