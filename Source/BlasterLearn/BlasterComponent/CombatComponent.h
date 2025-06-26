@@ -70,6 +70,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
     void FinishReloading();
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> GrenadeClass;
+	
 	void ThrowGrenade();
 	
 	UFUNCTION(server, Reliable)
