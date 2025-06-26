@@ -330,7 +330,7 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 		}
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
 		int32 Seconds = CountdownTime - Minutes * 60.f;
-		FString CountdownText = FString::Printf(TEXT("%02d:%2d"), Minutes, Seconds);
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->CharacterOverlay->MatchCountdownText->SetText(FText::FromString(CountdownText));
 	}
 }
@@ -349,7 +349,7 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
 		}
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
 		int32 Seconds = CountdownTime - Minutes * 60.f;
-		FString CountdownText = FString::Printf(TEXT("%02d:%2d"), Minutes, Seconds);
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->Announcement->WarmupTime->SetText(FText::FromString(CountdownText));
 	}
 }
