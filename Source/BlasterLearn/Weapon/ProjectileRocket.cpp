@@ -25,6 +25,7 @@ void AProjectileRocket::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// need more visual feedback / prediction, enhance player experience and decrease delay
 	if (!HasAuthority()) {
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);
 	}
