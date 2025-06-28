@@ -327,7 +327,7 @@ void ABlasterPlayerController::SetHUDGrenades(int32 Grenades) {
 		FString GrenadesText = FString::Printf(TEXT("%d"), Grenades);
 		BlasterHUD->CharacterOverlay->GrenadesText->SetText(FText::FromString(GrenadesText));
 	} else {
-		bInitializeCharacterOverlay = true;
+		// bInitializeCharacterOverlay = true;
 		HUDGrenades = Grenades;
 	}
 }

@@ -5,6 +5,7 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "BlasterLearn/Weapon/WeaponTypes.h"
 
 
 // Sets default values
@@ -21,10 +22,15 @@ APickup::APickup()
 	OverlapSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	OverlapSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	OverlapSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	OverlapSphere->AddLocalOffset(FVector(0.f, 0.f, 42.f));
 
 	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickupMesh"));
 	PickupMesh->SetupAttachment(OverlapSphere);
 	PickupMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PickupMesh->SetRelativeScale3D(FVector(4.2f, 4.2f, 4.2f));
+	PickupMesh->SetRenderCustomDepth(true);
+	PickupMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_PURPLE);
+	PickupMesh->MarkRenderStateDirty();
 }
 
 // Called when the game starts or when spawned
@@ -35,18 +41,11 @@ void APickup::BeginPlay()
 	if (HasAuthority()) {
 		// server-side handle collision 
 		OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
-		OverlapSphere->OnComponentEndOverlap.AddDynamic(this, &APickup::OnShpereEndOverlap);
 	}
 }
 
 void APickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	
-}
-
-void APickup::OnShpereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 }
 
@@ -54,7 +53,9 @@ void APickup::OnShpereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 void APickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (PickupMesh) {
+		PickupMesh->AddWorldRotation(FRotator(0.f, BaseTurnRate * DeltaTime, 0.f));
+	}
 }
 
 void APickup::Destroyed()

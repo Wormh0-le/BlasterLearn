@@ -26,7 +26,6 @@ UCombatComponent::UCombatComponent()
 	AimWalkSpeed = 400.f;
 }
 
-
 // Called when the game starts
 void UCombatComponent::BeginPlay()
 {
@@ -375,6 +374,19 @@ void UCombatComponent::UpdateCarriedAmmo()
 	if (Controller)
 	{
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+}
+
+void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)
+{
+	if (CarriedAmmoMap.Contains(WeaponType))
+	{
+		CarriedAmmoMap[WeaponType] = FMath::Clamp(CarriedAmmoMap[WeaponType] + AmmoAmount, 0, MaxCarriedAmmo);
+	}
+	if (EquippedWeapon && EquippedWeapon->GetWeaponType() == WeaponType)
+	{
+		UpdateCarriedAmmo();
+		if (EquippedWeapon->IsEmpty()) Reload();
 	}
 }
 
