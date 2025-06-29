@@ -96,7 +96,6 @@ protected:
 	void ReloadEmptyWeapon();
 	void ShowAttachedGrenade(bool bShowGrenade);
 private:
-
 	UPROPERTY()
 	ABlasterCharacter* Character;
 	
