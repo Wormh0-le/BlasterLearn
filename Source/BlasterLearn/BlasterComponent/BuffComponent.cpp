@@ -3,6 +3,8 @@
 
 #include "BuffComponent.h"
 
+#include "BlasterLearn/Character/BlasterCharacter.h"
+
 // Sets default values for this component's properties
 UBuffComponent::UBuffComponent()
 {
@@ -13,7 +15,6 @@ UBuffComponent::UBuffComponent()
 	// ...
 }
 
-
 // Called when the game starts
 void UBuffComponent::BeginPlay()
 {
@@ -23,12 +24,32 @@ void UBuffComponent::BeginPlay()
 	
 }
 
-
 // Called every frame
 void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	HealRampUp(DeltaTime);
 }
 
+void UBuffComponent::Heal(float HealAmount, float HealingTime)
+{
+	bHealing = true;
+	AmountToHeal += HealAmount;
+	HealingRate = HealAmount/ HealingTime;
+}
+
+void UBuffComponent::HealRampUp(float DeltaTime)
+{
+	if (!bHealing || Character == nullptr || Character->IsElimmed())	return;
+	const float HealThisFrame = HealingRate * DeltaTime;
+	Character->SetHealth(FMath::Clamp(Character->GetHealth() + HealThisFrame, 0.f, Character->GetMaxHealth()));
+	Character->UpdateHUDHealth();
+	AmountToHeal -= HealThisFrame;
+
+	if (AmountToHeal <= 0.f || Character->GetHealth() >= Character->GetMaxHealth())
+	{
+		bHealing = false;
+		AmountToHeal = 0.f;
+	}
+}
