@@ -54,8 +54,10 @@ public:
 	void ShowSniperScopeWidget(bool bShowScope);
 
 	void UpdateHUDHealth();
-
 	void UpdateHUDShield();
+	void UpdateHUDAmmo();
+
+	void SpawnDefaultWepaon();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -219,7 +221,10 @@ private:
 	// Grenade
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;
-	
+
+	// Default Weapon
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 public:
 	void FireButtonPressed();
 	void FireButtonReleased();

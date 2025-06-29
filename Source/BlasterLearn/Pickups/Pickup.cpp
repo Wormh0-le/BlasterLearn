@@ -43,7 +43,8 @@ void APickup::BeginPlay()
 	Super::BeginPlay();
 	if (HasAuthority())
 	{
-		// bind overlap with delay. This is to prevent pickups from failing to spawn when the character stands on their location for a long time.   
+		// bind overlap with delay. This is to prevent pickups from failing to spawn when the character stands on their location for a long time.
+		// It's destroyed too fast to bind callback
 		GetWorldTimerManager().SetTimer(
 			BindOverlapTimer,
 			this,
