@@ -17,6 +17,7 @@ public:
 	UBuffComponent();
 	friend class ABlasterCharacter;
 	void Heal(float HealAmount, float HealingTime);
+	void Replenish(float ShieldAmount, float ReplenishTime);
 	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
 	void SetInitialSpeed(float BaseSpeed, float CrouchSpeed);
 	void BuffJump(float BuffJumpVelocity, float BuffTime);
@@ -25,6 +26,7 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	void HealRampUp(float DeltaTime);
+	void ReplenishRampUp(float DeltaTime);
 
 public:	
 	// Called every frame
@@ -38,6 +40,11 @@ private:
 	bool bHealing = false;
 	float HealingRate = 0;
 	float AmountToHeal = 0.f;
+
+	// shield buff
+	bool bReplenish = false;
+	float ReplenishRate = 0;
+	float AmountToReplenish = 0.f;
 
 	// Speed buff
 	FTimerHandle SpeedBuffTimer;

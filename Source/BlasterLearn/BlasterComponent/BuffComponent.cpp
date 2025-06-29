@@ -40,6 +40,13 @@ void UBuffComponent::Heal(float HealAmount, float HealingTime)
 	HealingRate = HealAmount/ HealingTime;
 }
 
+void UBuffComponent::Replenish(float ShieldAmount, float ReplenishTime)
+{
+	bReplenish = true;
+	AmountToReplenish += ShieldAmount;
+	ReplenishRate = ShieldAmount / ReplenishTime;
+}
+
 void UBuffComponent::HealRampUp(float DeltaTime)
 {
 	if (!bHealing || Character == nullptr || Character->IsElimmed())	return;
@@ -52,6 +59,21 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 	{
 		bHealing = false;
 		AmountToHeal = 0.f;
+	}
+}
+
+void UBuffComponent::ReplenishRampUp(float DeltaTime)
+{
+	if (!bReplenish || Character == nullptr || Character->IsElimmed())	return;
+	const float ReplenishThisFrame = ReplenishRate * DeltaTime;
+	Character->SetShield(FMath::Clamp(Character->GetShield() + ReplenishThisFrame, 0.f, Character->GetMaxShield()));
+	Character->UpdateHUDShield();
+	AmountToReplenish -= ReplenishThisFrame;
+
+	if (AmountToReplenish <= 0.f || Character->GetShield() >= Character->GetMaxShield())
+	{
+		bReplenish = false;
+		AmountToReplenish = 0.f;
 	}
 }
 
