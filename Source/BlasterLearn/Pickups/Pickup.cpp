@@ -41,10 +41,15 @@ APickup::APickup()
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (HasAuthority()) {
-		// server-side handle collision 
-		OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
+	if (HasAuthority())
+	{
+		// bind overlap with delay. This is to prevent pickups from failing to spawn when the character stands on their location for a long time.   
+		GetWorldTimerManager().SetTimer(
+			BindOverlapTimer,
+			this,
+			&APickup::BindOverlapTimerFinished,
+			BindOverlapTime
+		);	
 	}
 }
 
@@ -83,5 +88,10 @@ void APickup::Destroyed()
 			GetActorRotation()
 		);
 	}
+}
+
+void APickup::BindOverlapTimerFinished()
+{
+	OverlapSphere->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnSphereOverlap);
 }
 
