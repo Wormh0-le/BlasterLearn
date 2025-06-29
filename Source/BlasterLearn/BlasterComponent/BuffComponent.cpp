@@ -40,6 +40,21 @@ void UBuffComponent::Heal(float HealAmount, float HealingTime)
 	HealingRate = HealAmount/ HealingTime;
 }
 
+void UBuffComponent::HealRampUp(float DeltaTime)
+{
+	if (!bHealing || Character == nullptr || Character->IsElimmed())	return;
+	const float HealThisFrame = HealingRate * DeltaTime;
+	Character->SetHealth(FMath::Clamp(Character->GetHealth() + HealThisFrame, 0.f, Character->GetMaxHealth()));
+	Character->UpdateHUDHealth();
+	AmountToHeal -= HealThisFrame;
+
+	if (AmountToHeal <= 0.f || Character->GetHealth() >= Character->GetMaxHealth())
+	{
+		bHealing = false;
+		AmountToHeal = 0.f;
+	}
+}
+
 void UBuffComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime)
 {
 	if (Character == nullptr)	return;
@@ -78,17 +93,36 @@ void UBuffComponent::ResetSpeed()
 	MulticastBuffSpeed(InitialBaseSpeed, InitialCrouchSpeed);
 }
 
-void UBuffComponent::HealRampUp(float DeltaTime)
+void UBuffComponent::SetInitialJumpVelocity(float Velocity)
 {
-	if (!bHealing || Character == nullptr || Character->IsElimmed())	return;
-	const float HealThisFrame = HealingRate * DeltaTime;
-	Character->SetHealth(FMath::Clamp(Character->GetHealth() + HealThisFrame, 0.f, Character->GetMaxHealth()));
-	Character->UpdateHUDHealth();
-	AmountToHeal -= HealThisFrame;
+	InitialJumpVelocity = Velocity;
+}
 
-	if (AmountToHeal <= 0.f || Character->GetHealth() >= Character->GetMaxHealth())
+void UBuffComponent::BuffJump(float BuffJumpVelocity, float BuffTime)
+{
+	if (Character == nullptr)	return;
+	Character->GetWorldTimerManager().SetTimer(
+		JumpBuffTimer,
+		this,
+		&UBuffComponent::ResetJump,
+		BuffTime
+	);
+
+	if (Character->GetCharacterMovement())
 	{
-		bHealing = false;
-		AmountToHeal = 0.f;
+		Character->GetCharacterMovement()->JumpZVelocity = BuffJumpVelocity;
 	}
+	MulticastJumpVelocity(BuffJumpVelocity);
+}
+
+void UBuffComponent::ResetJump()
+{
+	if (Character == nullptr || Character->GetCharacterMovement() == nullptr)	return;
+	Character->GetCharacterMovement()->JumpZVelocity = InitialJumpVelocity;
+	MulticastJumpVelocity(InitialJumpVelocity);
+}
+
+void UBuffComponent::MulticastJumpVelocity_Implementation(float JumpVelocity)
+{
+	Character->GetCharacterMovement()->JumpZVelocity = JumpVelocity;
 }

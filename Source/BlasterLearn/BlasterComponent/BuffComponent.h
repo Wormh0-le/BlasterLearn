@@ -19,6 +19,8 @@ public:
 	void Heal(float HealAmount, float HealingTime);
 	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
 	void SetInitialSpeed(float BaseSpeed, float CrouchSpeed);
+	void BuffJump(float BuffJumpVelocity, float BuffTime);
+	void SetInitialJumpVelocity(float Velocity);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -45,4 +47,12 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastBuffSpeed(float BaseSpeed, float CrouchSpeed);
+
+	// Jump buff
+	FTimerHandle JumpBuffTimer;
+	void ResetJump();
+	float InitialJumpVelocity;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastJumpVelocity(float JumpVelocity);
 };
