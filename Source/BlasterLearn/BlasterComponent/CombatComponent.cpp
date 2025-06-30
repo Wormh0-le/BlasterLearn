@@ -357,6 +357,26 @@ void UCombatComponent::SwapWeapons()
 	AttachActorToBackpack(SecondaryWeapon);
 }
 
+void UCombatComponent::ThrowEquippedWeapon()
+{
+	if (EquippedWeapon == nullptr) return;
+	FVector ThrowDirection = HitTarget - Character->GetActorLocation();
+	EquippedWeapon->SetThrowDirection(ThrowDirection.GetSafeNormal());
+	DropEquippedWeapon();
+	if (SecondaryWeapon) {
+		EquippedWeapon = SecondaryWeapon;
+		SecondaryWeapon = nullptr;
+		
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		AttachActorToRightHand(EquippedWeapon);
+		EquippedWeapon->SetHUDAmmo();
+
+		UpdateCarriedAmmo();
+		PlayEquipWeaponSound(EquippedWeapon);
+		ReloadEmptyWeapon();
+	}
+}
+
 void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 {
 	if (WeaponToEquip == nullptr) return;
@@ -631,7 +651,6 @@ void UCombatComponent::ThrowGrenadeFinished()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
 	AttachActorToRightHand(EquippedWeapon);
-	ShowAttachedGrenade(true);
 }
 
 void UCombatComponent::LaunchGrenade()
@@ -673,6 +692,7 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	{
 		Character->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
+		ShowAttachedGrenade(true);
 	}
 	Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades);
 	UpdateHUDGrenades();
@@ -680,11 +700,6 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 
 void UCombatComponent::OnRep_Grenades()
 {
-	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
-	if (Controller)
-	{
-		Controller->SetHUDGrenades(Grenades);
-	}
 	UpdateHUDGrenades();
 }
 

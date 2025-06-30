@@ -493,6 +493,14 @@ void ABlasterCharacter::ThrowGrenadeButtonPressed()
 	}
 }
 
+void ABlasterCharacter::ThrowEquippedWeaponButtonPressed()
+{
+	if (bDisableGameplay) return;
+	if (Combat) {
+		ServerThrowEquippedWeaponButtonPressed();
+	}
+}
+
 void ABlasterCharacter::CalculateAO_Pitch()
 {
 	AO_Pitch = GetBaseAimRotation().Pitch;
@@ -592,6 +600,14 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 }
 
+void ABlasterCharacter::ServerThrowEquippedWeaponButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		Combat->ThrowEquippedWeapon();
+	}
+}
+
 void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 {
 	if (Combat) {
@@ -669,6 +685,7 @@ void ABlasterCharacter::UpdateHUDAmmo()
 	if (BlasterPlayerController && Combat && Combat->EquippedWeapon) {
 		BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
 		BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
+		BlasterPlayerController->SetHUDGrenades(Combat->Grenades);
 	}
 }
 
@@ -784,4 +801,5 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ABlasterCharacter::ThrowGrenadeButtonPressed);
+	PlayerInputComponent->BindAction("ThrowEquippedWeapon", IE_Pressed, this, &ABlasterCharacter::ThrowEquippedWeaponButtonPressed);
 }

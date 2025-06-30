@@ -78,6 +78,7 @@ protected:
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void ThrowGrenadeButtonPressed();
+	void ThrowEquippedWeaponButtonPressed();
 	void CalculateAO_Pitch();
 	void AimOffset(float DeltaTime);
 	void SimProxiesTurn();
@@ -114,6 +115,9 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquippedButtonPressed();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowEquippedWeaponButtonPressed();
 
 	float AO_Yaw;
 	float InterpAO_Yaw;

@@ -88,6 +88,7 @@ protected:
 	TSubclassOf<class AProjectile> GrenadeClass;
 	
 	void ThrowGrenade();
+	void ThrowEquippedWeapon();
 	
 	UFUNCTION(server, Reliable)
 	void ServerThrowGrenade();
@@ -208,7 +209,7 @@ private:
 	void UpdateShotgunAmmoValues();
 
 	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
-	int32 Grenades = 0;
+	int32 Grenades = 4;
 
 	UFUNCTION()
 	void OnRep_Grenades();
