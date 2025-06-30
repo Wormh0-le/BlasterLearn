@@ -27,6 +27,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
+	void SwapWeapons();
 
 	void Reload();
 
@@ -216,4 +217,6 @@ private:
 	int32 MaxGrenades = 4;
 
 	void UpdateHUDGrenades();
+public:
+	bool CanSwapWeapons();
 };

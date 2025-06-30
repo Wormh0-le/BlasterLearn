@@ -200,16 +200,7 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 
 void ABlasterCharacter::Elim()
 {
-	if (Combat && Combat->EquippedWeapon)
-	{
-		if (Combat->EquippedWeapon->bDestroyWeapon)
-		{
-			Combat->EquippedWeapon->Destroy();	
-		} else
-		{
-			Combat->EquippedWeapon->Dropped();
-		}
-	}
+	DropOrDestroyWeapons();
 	MultiCastElim();
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
@@ -217,7 +208,33 @@ void ABlasterCharacter::Elim()
 		&ABlasterCharacter::ElimTimerFinished,
 		ElimDelay
 	);
+}
 
+void ABlasterCharacter::DropOrDestroyWeapons()
+{
+	if (Combat)
+	{
+		if (Combat->EquippedWeapon)
+		{
+			DropOrDestroyWeapon(Combat->EquippedWeapon);	
+		}
+		if (Combat->SecondaryWeapon)
+		{
+			DropOrDestroyWeapon(Combat->SecondaryWeapon);	
+		}
+	}
+}
+
+void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
+{
+	if (Weapon == nullptr) return;
+	if (Weapon->bDestroyWeapon)
+	{
+		Weapon->Destroy();
+	} else
+	{
+		Weapon->Dropped();
+	}
 }
 
 void ABlasterCharacter::MultiCastElim_Implementation()
@@ -578,7 +595,13 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 {
 	if (Combat) {
-		Combat->EquipWeapon(OverlappingWeapon);
+		if (OverlappingWeapon)
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		} else if (Combat->CanSwapWeapons())
+		{
+			Combat->SwapWeapons();
+		}
 	}
 }
 

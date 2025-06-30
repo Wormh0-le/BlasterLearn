@@ -84,8 +84,11 @@ protected:
 
 	void PlayHitReactMontage();
 
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void DropOrDestroyWeapons();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
