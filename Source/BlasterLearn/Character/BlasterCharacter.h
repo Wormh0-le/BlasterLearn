@@ -173,7 +173,7 @@ private:
 	float MaxShield = 100.f;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Shield, VisibleAnywhere, Category = "Player stats")
-	float Shield = 10.f;
+	float Shield = 0.f;
 
 	UFUNCTION()
 	void OnRep_Shield();

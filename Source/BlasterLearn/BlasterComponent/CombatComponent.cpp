@@ -698,6 +698,12 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	UpdateHUDGrenades();
 }
 
+void UCombatComponent::InitalGrenades()
+{
+	Grenades = MaxGrenades;
+	UpdateHUDGrenades();
+}
+
 void UCombatComponent::OnRep_Grenades()
 {
 	UpdateHUDGrenades();

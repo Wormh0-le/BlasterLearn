@@ -207,14 +207,15 @@ private:
 	void OnRep_CombatState();
 	void UpdateAmmoValues();
 	void UpdateShotgunAmmoValues();
+	void InitalGrenades();
 
 	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
-	int32 Grenades = 4;
+	int32 Grenades;
 
 	UFUNCTION()
 	void OnRep_Grenades();
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	int32 MaxGrenades = 4;
 
 	void UpdateHUDGrenades();

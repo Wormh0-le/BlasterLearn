@@ -202,12 +202,6 @@ void ABlasterCharacter::Elim()
 {
 	DropOrDestroyWeapons();
 	MultiCastElim();
-	GetWorldTimerManager().SetTimer(
-		ElimTimer,
-		this,
-		&ABlasterCharacter::ElimTimerFinished,
-		ElimDelay
-	);
 }
 
 void ABlasterCharacter::DropOrDestroyWeapons()
@@ -243,6 +237,7 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 	{
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
 		BlasterPlayerController->SetHUDCarriedAmmo(0);
+		BlasterPlayerController->SetHUDGrenades(0);
 	}
 	bElimmed = true;
 	PlayElimMontage();
@@ -290,6 +285,12 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 	{
 		ShowSniperScopeWidget(false);
 	}
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -312,10 +313,6 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	SpawnDefaultWepaon();
-	UpdateHUDAmmo();
-	UpdateHUDHealth();
-	UpdateHUDShield();
 	if (HasAuthority()) {
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
@@ -685,7 +682,6 @@ void ABlasterCharacter::UpdateHUDAmmo()
 	if (BlasterPlayerController && Combat && Combat->EquippedWeapon) {
 		BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
 		BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
-		BlasterPlayerController->SetHUDGrenades(Combat->Grenades);
 	}
 }
 
@@ -700,6 +696,7 @@ void ABlasterCharacter::SpawnDefaultWepaon()
 		if (Combat)
 		{
 			Combat->EquipWeapon(StartingWeapon);
+			Combat->InitalGrenades();
 		}
 	}
 }
@@ -713,6 +710,17 @@ void ABlasterCharacter::PollInit()
 		{
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+		}
+	}
+	if (BlasterPlayerController == nullptr)
+	{
+		BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+		if (BlasterPlayerController)
+		{
+			SpawnDefaultWepaon();
+			UpdateHUDAmmo();
+			UpdateHUDHealth();
+			UpdateHUDShield();
 		}
 	}
 }
