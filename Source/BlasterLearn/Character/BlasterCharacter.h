@@ -116,8 +116,8 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerEquippedButtonPressed();
 
-	UFUNCTION(Server, Reliable)
-	void ServerThrowEquippedWeaponButtonPressed();
+	// UFUNCTION(Server, Reliable)
+	// void ServerThrowEquippedButtonPressed();
 
 	float AO_Yaw;
 	float InterpAO_Yaw;

@@ -494,7 +494,7 @@ void ABlasterCharacter::ThrowEquippedWeaponButtonPressed()
 {
 	if (bDisableGameplay) return;
 	if (Combat) {
-		ServerThrowEquippedWeaponButtonPressed();
+		Combat->ThrowEquippedWeapon();
 	}
 }
 
@@ -597,13 +597,13 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 }
 
-void ABlasterCharacter::ServerThrowEquippedWeaponButtonPressed_Implementation()
-{
-	if (Combat)
-	{
-		Combat->ThrowEquippedWeapon();
-	}
-}
+// void ABlasterCharacter::ServerThrowEquippedButtonPressed_Implementation()
+// {
+// 	if (Combat)
+// 	{
+// 		Combat->ThrowEquippedWeapon();	
+// 	}
+// }
 
 void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 {
@@ -696,7 +696,7 @@ void ABlasterCharacter::SpawnDefaultWepaon()
 		if (Combat)
 		{
 			Combat->EquipWeapon(StartingWeapon);
-			Combat->InitalGrenades();
+			Combat->InitialGrenades();
 		}
 	}
 }

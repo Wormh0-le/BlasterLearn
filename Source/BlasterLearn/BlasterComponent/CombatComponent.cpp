@@ -359,9 +359,8 @@ void UCombatComponent::SwapWeapons()
 
 void UCombatComponent::ThrowEquippedWeapon()
 {
-	if (EquippedWeapon == nullptr) return;
-	FVector ThrowDirection = HitTarget - Character->GetActorLocation();
-	EquippedWeapon->SetThrowDirection(ThrowDirection.GetSafeNormal());
+	if (EquippedWeapon == nullptr) return
+	
 	DropEquippedWeapon();
 	if (SecondaryWeapon) {
 		EquippedWeapon = SecondaryWeapon;
@@ -374,6 +373,10 @@ void UCombatComponent::ThrowEquippedWeapon()
 		UpdateCarriedAmmo();
 		PlayEquipWeaponSound(EquippedWeapon);
 		ReloadEmptyWeapon();
+	} else
+	{
+		Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+		Character->bUseControllerRotationYaw = false;
 	}
 }
 
@@ -412,6 +415,7 @@ void UCombatComponent::DropEquippedWeapon()
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->Dropped();
+		EquippedWeapon = nullptr;
 	}
 }
 

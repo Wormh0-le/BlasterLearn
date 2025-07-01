@@ -88,10 +88,11 @@ protected:
 	TSubclassOf<class AProjectile> GrenadeClass;
 	
 	void ThrowGrenade();
-	void ThrowEquippedWeapon();
 	
 	UFUNCTION(server, Reliable)
 	void ServerThrowGrenade();
+
+	void ThrowEquippedWeapon();
 
 	void DropEquippedWeapon();
 	void AttachActorToRightHand(AActor* ActorToAttach);

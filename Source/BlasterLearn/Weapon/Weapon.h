@@ -135,11 +135,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
-
-	float ThrowStrength = 800.f;
-
-	FVector ThrowDirection = FVector(0, 0, 0);
-
 public:	
 	void SetWeaponState(EWeaponState state);
 
@@ -153,5 +148,4 @@ public:
 	FORCEINLINE EWeaponType GetWeaponType()	const { return WeaponType; }
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
-	FORCEINLINE void SetThrowDirection(const FVector& Direction) { ThrowDirection = Direction; }
 };
