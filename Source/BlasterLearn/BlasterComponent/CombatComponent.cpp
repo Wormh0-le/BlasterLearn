@@ -233,6 +233,7 @@ void UCombatComponent::Fire()
 	if (CanFire())
 	{
 		ServerFire(HitTarget);
+		LocalFire(HitTarget);
 		if (EquippedWeapon) {
 			bCanFire = false;
 			CrosshairShootingFactor = 0.75f; 
@@ -242,7 +243,7 @@ void UCombatComponent::Fire()
 	
 }
 
-void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr)	return;
 	bool bShotgunReloading = CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun;
@@ -254,6 +255,12 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 			CombatState = ECombatState::ECS_Unoccupied;
 		}
 	}
+}
+
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (Character && Character->IsLocallyControlled() && !Character->HasAuthority())	return;
+	LocalFire(TraceHitTarget);
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -348,6 +355,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
+	if (CombatState != ECombatState::ECS_Unoccupied)	return;
 	// descrease afterimage
 	SecondaryWeapon->EnableCustomDepth(false);
 	AWeapon* TempWeapon = EquippedWeapon;
