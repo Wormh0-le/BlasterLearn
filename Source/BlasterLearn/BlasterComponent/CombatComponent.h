@@ -99,6 +99,11 @@ protected:
 	
 	UFUNCTION(Server, Reliable)
 	void ServerDropEquippedWeapon(const FVector_NetQuantize& Target);
+
+	void OnThrowEquippedWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerOnThrowEquippedWeapon();
 	
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);

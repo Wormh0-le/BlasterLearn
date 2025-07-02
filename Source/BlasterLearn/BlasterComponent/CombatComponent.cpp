@@ -383,12 +383,17 @@ void UCombatComponent::ThrowEquippedWeapon()
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied)	return;
 	DropEquippedWeapon();
+	// client, local prediction
 	if (SecondaryWeapon) {
 		EquipPrimaryWeapon(SecondaryWeapon);
 		SecondaryWeapon = nullptr;
 	} else
 	{
 		ResetCombat();	
+	}
+	if (Character && !Character->HasAuthority())
+	{
+		ServerOnThrowEquippedWeapon();
 	}
 }
 
@@ -438,6 +443,17 @@ void UCombatComponent::ServerDropEquippedWeapon_Implementation(const FVector_Net
 		FVector ThrowDirection = (Target - Character->GetActorLocation()).GetSafeNormal();
 		EquippedWeapon->GetWeaponMesh()->AddImpulse(ThrowDirection * ThrowStrength, NAME_None, true);
 		EquippedWeapon = nullptr;	
+	}
+}
+
+void UCombatComponent::ServerOnThrowEquippedWeapon_Implementation()
+{
+	if (SecondaryWeapon) {
+		EquipPrimaryWeapon(SecondaryWeapon);
+		SecondaryWeapon = nullptr;
+	} else
+	{
+		ResetCombat();	
 	}
 }
 
