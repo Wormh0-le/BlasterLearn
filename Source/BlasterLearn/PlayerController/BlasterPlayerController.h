@@ -36,6 +36,7 @@ public:
 	void HandleCooldown();
 protected:
 	virtual void BeginPlay() override;
+	void CheckPing(float DeltaTime);
 	void SetHUDTime();
 	void PollInit();
 
@@ -61,6 +62,10 @@ protected:
 
 	UFUNCTION(Client, Reliable)
 	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime, float Cooldown);
+
+	void HighPingWarning();
+
+	void StopHighPingWarning();
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
@@ -105,4 +110,17 @@ private:
 	
 	int32 HUDGrenades;
 	bool bInitializeGrenades = false;
+
+	float HighPingRunningTime = 0.f;
+
+	float PingAnimationRunningTime = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.f;
+
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 20.f;
+	
+	UPROPERTY(EditAnywhere)
+	float HighPingThreshold = 50.f;
 };
