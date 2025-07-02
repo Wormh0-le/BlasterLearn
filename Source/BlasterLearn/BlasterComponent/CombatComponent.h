@@ -28,6 +28,7 @@ public:
 
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 	void SwapWeapons();
+	void ResetCombat();
 
 	void Reload();
 
@@ -95,6 +96,10 @@ protected:
 	void ThrowEquippedWeapon();
 
 	void DropEquippedWeapon();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerDropEquippedWeapon(const FVector_NetQuantize& Target);
+	
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 	void AttachActorToBackpack(AActor* ActorToAttach);
@@ -220,6 +225,9 @@ private:
 	int32 MaxGrenades = 4;
 
 	void UpdateHUDGrenades();
+
+	UPROPERTY(EditAnywhere)
+	float ThrowStrength = 200.f;
 public:
 	bool CanSwapWeapons();
 };

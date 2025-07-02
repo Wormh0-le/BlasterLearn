@@ -215,13 +215,7 @@ void AWeapon::OnDropped()
 	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	// BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	// if (BlasterOwnerCharacter)
-	// {
-	// 	FVector ThrowDirection = (BlasterOwnerCharacter->GetHitTarget() - BlasterOwnerCharacter->GetActorLocation()).GetSafeNormal();
-	// 	WeaponMesh->AddImpulse(ThrowDirection * 300.f, NAME_None, true);
-	// }
-		
+	
 	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 	WeaponMesh->MarkRenderStateDirty();
 	EnableCustomDepth(true);

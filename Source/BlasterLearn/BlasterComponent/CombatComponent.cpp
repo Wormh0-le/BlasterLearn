@@ -306,6 +306,10 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		PlayEquipWeaponSound(EquippedWeapon);
 		EquippedWeapon->SetHUDAmmo();
 		UpdateCarriedAmmo();
+	} else
+	{
+		AttachActorToRightHand((AActor*)nullptr);
+		ResetCombat();
 	}
 }
 
@@ -319,6 +323,9 @@ void UCombatComponent::OnRep_SecondaryWeapon()
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 		PlayEquipWeaponSound(SecondaryWeapon);
+	} else
+	{
+		AttachActorToBackpack((AActor*)nullptr);
 	}
 }
 
@@ -341,6 +348,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
+	// descrease afterimage
+	SecondaryWeapon->EnableCustomDepth(false);
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
 	SecondaryWeapon = TempWeapon;
@@ -357,26 +366,29 @@ void UCombatComponent::SwapWeapons()
 	AttachActorToBackpack(SecondaryWeapon);
 }
 
+void UCombatComponent::ResetCombat()
+{
+	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
+	Character->bUseControllerRotationYaw = false;
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(0);
+		Controller->SetHUDWeaponAmmo(0);
+	}
+}
+
 void UCombatComponent::ThrowEquippedWeapon()
 {
-	if (EquippedWeapon == nullptr) return
-	
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+	if (CombatState != ECombatState::ECS_Unoccupied)	return;
 	DropEquippedWeapon();
 	if (SecondaryWeapon) {
-		EquippedWeapon = SecondaryWeapon;
+		EquipPrimaryWeapon(SecondaryWeapon);
 		SecondaryWeapon = nullptr;
-		
-		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-		AttachActorToRightHand(EquippedWeapon);
-		EquippedWeapon->SetHUDAmmo();
-
-		UpdateCarriedAmmo();
-		PlayEquipWeaponSound(EquippedWeapon);
-		ReloadEmptyWeapon();
 	} else
 	{
-		Character->GetCharacterMovement()->bOrientRotationToMovement = true;
-		Character->bUseControllerRotationYaw = false;
+		ResetCombat();	
 	}
 }
 
@@ -412,12 +424,23 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::DropEquippedWeapon()
 {
+	if (EquippedWeapon && Character && Character->IsLocallyControlled())
+	{
+		ServerDropEquippedWeapon(HitTarget);
+	}
+}
+
+void UCombatComponent::ServerDropEquippedWeapon_Implementation(const FVector_NetQuantize& Target)
+{
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->Dropped();
-		EquippedWeapon = nullptr;
+		FVector ThrowDirection = (Target - Character->GetActorLocation()).GetSafeNormal();
+		EquippedWeapon->GetWeaponMesh()->AddImpulse(ThrowDirection * ThrowStrength, NAME_None, true);
+		EquippedWeapon = nullptr;	
 	}
 }
+
 
 void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
 {
