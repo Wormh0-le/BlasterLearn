@@ -13,6 +13,7 @@
 #include "BlasterLearn/PlayerController/BlasterPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "BlasterLearn/Weapon/Projectile.h"
+#include "BlasterLearn/Weapon/Shotgun.h"
 
 
 // Sets default values for this component's properties
@@ -232,29 +233,92 @@ void UCombatComponent::Fire()
 {
 	if (CanFire())
 	{
-		ServerFire(HitTarget);
-		LocalFire(HitTarget);
 		if (EquippedWeapon) {
 			bCanFire = false;
-			CrosshairShootingFactor = 0.75f; 
+			CrosshairShootingFactor = 0.75f;
+			switch (EquippedWeapon->FireType)
+			{
+			case EFireType::EFT_HitScan:
+				FireHitScanWeapon();
+				break;
+			case EFireType::EFT_Projectile:
+				FireHitScanWeapon();
+				break;
+			case EFireType::EFT_Shotgun:
+				FireShotgun();
+				break;
+			}		
 		}
 		StartFireTimer();	
 	}
 	
 }
 
+void UCombatComponent::FireProjectileWeapon()
+{
+	if (Character)
+	{
+		if (!Character->HasAuthority()) LocalFire(HitTarget);
+		ServerFire(HitTarget);	
+	}
+	
+}
+
+void UCombatComponent::FireHitScanWeapon()
+{
+	if (EquippedWeapon)
+	{
+		HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		FireProjectileWeapon();
+	}
+}
+
+void UCombatComponent::FireShotgun()
+{
+	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
+	if (Shotgun && Character)
+	{
+		TArray<FVector_NetQuantize> ScatteredHitTargets;
+		Shotgun->ShotgunTraceEndWithScatter(HitTarget, ScatteredHitTargets);
+		if (!Character->HasAuthority()) LocalShotgunFire(ScatteredHitTargets);
+		ServerShotgunFire(ScatteredHitTargets);
+	}
+}
+
 void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr)	return;
-	bool bShotgunReloading = CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun;
-	if (Character && (CombatState == ECombatState::ECS_Unoccupied || bShotgunReloading))
+	if (Character && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::LocalShotgunFire(const TArray<FVector_NetQuantize>& ScatteredHitTargets)
+{
+	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
+	if (Shotgun == nullptr)	return;
+	
+	bool bShotgunReloading = CombatState == ECombatState::ECS_Reloading;
+	if (Character && (CombatState == ECombatState::ECS_Unoccupied || bShotgunReloading))
+	{
+		Character->PlayFireMontage(bAiming);
+		Shotgun->FireShotgun(ScatteredHitTargets);
 		if (bShotgunReloading) {
 			CombatState = ECombatState::ECS_Unoccupied;
 		}
 	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MulticastFire(TraceHitTarget);
+}
+
+void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& ScatteredHitTargets)
+{
+	MulticastShotgunFire(ScatteredHitTargets);
 }
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -263,9 +327,10 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	LocalFire(TraceHitTarget);
 }
 
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::MulticastShotgunFire_Implementation(const TArray<FVector_NetQuantize>& ScatteredHitTargets)
 {
-	MulticastFire(TraceHitTarget);
+	if (Character && Character->IsLocallyControlled() && !Character->HasAuthority())	return;
+	LocalShotgunFire(ScatteredHitTargets);
 }
 
 void UCombatComponent::FireButtonPressed(bool bPressed)
