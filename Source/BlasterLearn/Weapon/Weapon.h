@@ -138,16 +138,27 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(EditAnywhere)
 	int32 Ammo;
 	
-	UFUNCTION()
-	void OnRep_Ammo();
-
-	virtual void OnRep_Owner() override;
-
 	void SpendRound();
 
+	// The number of unprocessed server requests for Ammo
+	// Incremented in SpendRound, decremented in ClientUpdateAmmo
+	int32 Sequence = 0;
+	
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmo(int32 ServerAmmo);
+
+	UFUNCTION(Client, Reliable)
+	void ClientAddAmmo(int32 AmmoToAdd);
+	
+	// use client prediction, otherwise ammo value have delay 
+	// UFUNCTION()
+	// void OnRep_Ammo();
+
+	virtual void OnRep_Owner() override;
+	
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
 
