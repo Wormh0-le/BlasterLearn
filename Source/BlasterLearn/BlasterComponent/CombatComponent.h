@@ -31,6 +31,8 @@ public:
 	void ResetCombat();
 
 	void Reload();
+	// client prediction for reloading
+	bool bLocallyReloading = false;
 
 	UFUNCTION(BlueprintCallable)
 	void ShotgunShellReload();
