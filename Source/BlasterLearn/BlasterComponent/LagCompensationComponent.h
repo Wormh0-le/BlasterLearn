@@ -7,6 +7,32 @@
 #include "LagCompensationComponent.generated.h"
 
 
+USTRUCT()
+struct FBoxInformation
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FVector Location;
+
+	UPROPERTY()
+	FRotator Rotation;
+
+	FVector BoxExtent;
+};
+
+USTRUCT(BlueprintType)
+struct FFramePackage
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	float Time;
+
+	UPROPERTY()
+	TMap<FName, FBoxInformation> HitBoxInfo;
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BLASTERLEARN_API ULagCompensationComponent : public UActorComponent
 {
@@ -15,14 +41,24 @@ class BLASTERLEARN_API ULagCompensationComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	ULagCompensationComponent();
+	friend class ABlasterCharacter;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	void SaveFramePackage(FFramePackage& Package);
+
+private:
+	UPROPERTY()
+	ABlasterCharacter* Character;
+
+	UPROPERTY()
+	class ABlasterPlayerController* Controller;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	void ShowFramePackage(const FFramePackage& Package, FColor Color);
 };
