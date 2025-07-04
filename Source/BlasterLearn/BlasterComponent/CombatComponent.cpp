@@ -513,7 +513,14 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::DropEquippedWeapon()
 {
-	if (EquippedWeapon && Character && Character->IsLocallyControlled())
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Dropped();
+		FVector ThrowDirection = (HitTarget - Character->GetActorLocation()).GetSafeNormal();
+		EquippedWeapon->GetWeaponMesh()->AddImpulse(ThrowDirection * ThrowStrength, NAME_None, true);
+		EquippedWeapon = nullptr;
+	}
+	if (Character && !Character->HasAuthority())
 	{
 		ServerDropEquippedWeapon(HitTarget);
 	}
