@@ -5,6 +5,8 @@
 #include "BlasterLearn/Character/BlasterCharacter.h"
 #include "Components/BoxComponent.h"
 #include "DrawDebugHelpers.h"
+#include "BlasterLearn/Weapon/Weapon.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values for this component's properties
@@ -24,6 +26,35 @@ void ULagCompensationComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+// Called every frame
+void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	UpdateFrameHistory();
+}
+
+void ULagCompensationComponent::UpdateFrameHistory()
+{
+	if (Character == nullptr || !Character->HasAuthority())	return;
+	FFramePackage CurFrame;
+	SaveFramePackage(CurFrame);
+	if (FrameHistory.Num() <= 1)
+	{
+		FrameHistory.AddHead(CurFrame);
+	}
+	else
+	{
+		float HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
+		while (HistoryLength > MaxRecordTime)
+		{
+			FrameHistory.RemoveNode(FrameHistory.GetTail());
+			HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
+		}
+		FrameHistory.AddHead(CurFrame);
+		// ShowFramePackage(CurFrame, FColor::Green);
+	}
+}
+
 void ULagCompensationComponent::SaveFramePackage(FFramePackage& Package)
 {
 	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : Character;
@@ -38,6 +69,78 @@ void ULagCompensationComponent::SaveFramePackage(FFramePackage& Package)
 			BoxInfo.BoxExtent = BoxPair.Value->GetScaledBoxExtent();
 			Package.HitBoxInfo.Add(BoxPair.Key, BoxInfo);
 		}
+	}
+}
+
+FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter,
+	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
+{
+	bool bReturn =
+		HitCharacter == nullptr || HitCharacter->GetLagCompensation() == nullptr ||
+		HitCharacter->GetLagCompensation()->FrameHistory.GetHead() == nullptr ||
+		HitCharacter->GetLagCompensation()->FrameHistory.GetTail() == nullptr;
+	if (bReturn)	return FServerSideRewindResult();
+
+	// FramePackage that we check to verify a hit
+	FFramePackage FrameToCheck;
+	bool bShouldInterpolate = true;
+	// frame history of the hit character
+	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensation()->FrameHistory;
+	const float OldestHistoryTime = History.GetTail()->GetValue().Time;
+	const float NewestHistoryTime = History.GetHead()->GetValue().Time;
+	if (OldestHistoryTime > HitTime)
+	{
+		// too far back in time, so we can't rewind. too laggy do SSR
+		return FServerSideRewindResult();
+	}
+	if (OldestHistoryTime == HitTime)
+	{
+		FrameToCheck = History.GetTail()->GetValue();
+		bShouldInterpolate = false;
+	}
+	if (NewestHistoryTime <= HitTime)
+	{
+		FrameToCheck = History.GetHead()->GetValue();
+		bShouldInterpolate = false;
+	}
+	auto RightFramePackage = History.GetHead();
+	auto LeftFramePackage = RightFramePackage;
+	while (LeftFramePackage->GetValue().Time > HitTime)
+	{
+		if (LeftFramePackage->GetNextNode() == nullptr)	break;
+		LeftFramePackage = LeftFramePackage->GetNextNode();
+		if (LeftFramePackage->GetValue().Time > HitTime)
+		{
+			RightFramePackage = LeftFramePackage;
+		}
+	}
+	if (LeftFramePackage->GetValue().Time == HitTime)
+	{
+		FrameToCheck = LeftFramePackage->GetValue();
+		bShouldInterpolate = false;
+	}
+	if (bShouldInterpolate)
+	{
+		// Interpolate between the two frames
+		FrameToCheck = InterpBetweenFrames(LeftFramePackage->GetValue(), RightFramePackage->GetValue(), HitTime);
+	}
+	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+}
+
+void ULagCompensationComponent::ServerScoreRequst_Implementation(ABlasterCharacter* HitCharacter,
+	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime,
+	AWeapon* DamgeCauser)
+{
+	FServerSideRewindResult Confirm = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
+	if (Character && DamgeCauser && Confirm.bHitConfirmed)
+	{
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			DamgeCauser->GetDamage(),
+			Character->Controller,
+			DamgeCauser,
+			UDamageType::StaticClass()
+		);
 	}
 }
 
@@ -178,30 +281,6 @@ void ULagCompensationComponent::EnableCharacterMeshCollision(ABlasterCharacter* 
 	}
 }
 
-
-// Called every frame
-void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	FFramePackage CurFrame;
-	SaveFramePackage(CurFrame);
-	if (FrameHistory.Num() <= 1)
-	{
-		FrameHistory.AddHead(CurFrame);
-	}
-	else
-	{
-		float HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
-		while (HistoryLength > MaxRecordTime)
-		{
-			FrameHistory.RemoveNode(FrameHistory.GetTail());
-			HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
-		}
-		FrameHistory.AddHead(CurFrame);
-		ShowFramePackage(CurFrame, FColor::Green);
-	}
-}
-
 void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, FColor Color)
 {
 	for (auto& BoxInfo :Package.HitBoxInfo)
@@ -216,60 +295,5 @@ void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, F
 			4.f
 		);
 	}
-}
-
-FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter,
-	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
-{
-	bool bReturn =
-		HitCharacter == nullptr || HitCharacter->GetLagCompensation() == nullptr ||
-		HitCharacter->GetLagCompensation()->FrameHistory.GetHead() == nullptr ||
-		HitCharacter->GetLagCompensation()->FrameHistory.GetTail() == nullptr;
-	if (bReturn)	return FServerSideRewindResult();
-
-	// FramePackage that we check to verify a hit
-	FFramePackage FrameToCheck;
-	bool bShouldInterpolate = true;
-	// frame history of the hit character
-	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensation()->FrameHistory;
-	const float OldestHistoryTime = History.GetTail()->GetValue().Time;
-	const float NewestHistoryTime = History.GetHead()->GetValue().Time;
-	if (OldestHistoryTime > HitTime)
-	{
-		// too far back in time, so we can't rewind. too laggy do SSR
-		return FServerSideRewindResult();
-	}
-	if (OldestHistoryTime == HitTime)
-	{
-		FrameToCheck = History.GetTail()->GetValue();
-		bShouldInterpolate = false;
-	}
-	if (NewestHistoryTime <= HitTime)
-	{
-		FrameToCheck = History.GetHead()->GetValue();
-		bShouldInterpolate = false;
-	}
-	auto RightFramePackage = History.GetHead();
-	auto LeftFramePackage = RightFramePackage;
-	while (LeftFramePackage->GetValue().Time > HitTime)
-	{
-		if (LeftFramePackage->GetNextNode() == nullptr)	break;
-		LeftFramePackage = LeftFramePackage->GetNextNode();
-		if (LeftFramePackage->GetValue().Time > HitTime)
-		{
-			RightFramePackage = LeftFramePackage;
-		}
-	}
-	if (LeftFramePackage->GetValue().Time == HitTime)
-	{
-		FrameToCheck = LeftFramePackage->GetValue();
-		bShouldInterpolate = false;
-	}
-	if (bShouldInterpolate)
-	{
-		// Interpolate between the two frames
-		FrameToCheck = InterpBetweenFrames(LeftFramePackage->GetValue(), RightFramePackage->GetValue(), HitTime);
-	}
-	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
 }
 
