@@ -31,23 +31,28 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
 		if (BlasterCharacter && InstigatorController)
 		{
-			if (HasAuthority() && !bUseServerSideRewind)
+			if (!bUseServerSideRewind)
 			{
-				UGameplayStatics::ApplyDamage(
-					BlasterCharacter,
-					Damage,
-					InstigatorController,
-					this,
-					UDamageType::StaticClass()
-				);	
+				// TODO: check headShot
+				if (HasAuthority())
+				{
+					UGameplayStatics::ApplyDamage(
+						BlasterCharacter,
+						Damage,
+						InstigatorController,
+						this,
+						UDamageType::StaticClass()
+					);	
+				}
+				
 			}
-			if (!HasAuthority() && bUseServerSideRewind)
+			else
 			{
 				BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 				BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
-				if (BlasterOwnerController && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation())
+				if (BlasterOwnerController && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation() && BlasterOwnerCharacter->IsLocallyControlled())
 				{
-					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequst(
+					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
 						BlasterCharacter,
 						Start,
 						FireHit.ImpactPoint,
@@ -56,7 +61,6 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					);
 				}
 			}
-			
 		}
 		if (ImpactParticles)
 		{

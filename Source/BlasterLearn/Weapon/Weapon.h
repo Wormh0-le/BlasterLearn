@@ -120,6 +120,9 @@ protected:
 	float Damage = 20.f;
 
 	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 88.f;
+
+	UPROPERTY(EditAnywhere)
 	bool bUseServerSideRewind = false;
 
 	UPROPERTY()
@@ -190,4 +193,5 @@ public:
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE float GetDamage() const { return Damage; }
+	FORCEINLINE float GetHeadShotDamage() const { return HeadShotDamage; }
 };
