@@ -35,6 +35,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 						TargetRotation,
 						SpawnParams
 					);
+					SpawnedProjectile->bUseServerSideRewind = false;
 				}
 				else
 				{
@@ -43,9 +44,11 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 						SocketTransform.GetLocation(),
 						TargetRotation,
 						SpawnParams
-					);	
+					);
+					SpawnedProjectile->TraceStart = SocketTransform.GetLocation();
+					SpawnedProjectile->InitialVelocity = SpawnedProjectile->GetActorForwardVector() * SpawnedProjectile->InitialSpeed;
+					SpawnedProjectile->bUseServerSideRewind = true;
 				}
-				SpawnedProjectile->bUseServerSideRewind = false;
 				SpawnedProjectile->Damage = Damage;
 			}
 			else // client

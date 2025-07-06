@@ -77,8 +77,6 @@ protected:
 	void SaveFramePackage(FFramePackage& Package);
 
 	FFramePackage InterpBetweenFrames(const FFramePackage& LeftFrame, const FFramePackage& RightFrame, float HitTime);
-
-	FServerSideRewindResult ConfirmHit(const FFramePackage& Package, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation);
 	
 	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
 	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
@@ -104,16 +102,30 @@ public:
 
 	void ShowFramePackage(const FFramePackage& Package, FColor Color);
 
-	FServerSideRewindResult ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime);
-
+	// Hitscan
 	UFUNCTION(Server, Reliable)
 	void ServerScoreRequest(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, class AWeapon* DamageCauser);
+	
+	FServerSideRewindResult ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime);
+	FServerSideRewindResult ConfirmHit(const FFramePackage& Package, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation);
 
+	// Shotgun, special hitscan etc
 	UFUNCTION(Server, Reliable)
 	void BatchServerScoreRequest(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime, class AWeapon* DamageCauser);
-
-	// Shotgun
+	
 	FBatchServerSideRewindResult BatchServerSideRewind(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime);
 	FBatchServerSideRewindResult BatchConfirmHit(const TArray<FFramePackage>& FramePackages, 
-		const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations);
+	const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations);
+
+	// projectile
+	UFUNCTION(Server, Reliable)
+	void ProjectileServerScoreRequest(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime, class AProjectile* DamageCauser);
+	
+	FServerSideRewindResult ProjectileServerSideRewind(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
+	FServerSideRewindResult ProjectileConfirmHit(const FFramePackage& Package, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime);
 };
