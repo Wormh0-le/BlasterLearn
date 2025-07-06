@@ -19,4 +19,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> ProjectileClass;
+
+	// non replicated
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AProjectile> NonReplicatedProjectileClass;
 };
