@@ -101,7 +101,7 @@ void AWeapon::SpendRound()
 		ClientUpdateAmmo(Ammo);
 	} else
 	{
-		Sequence++;
+		FireSequence++;
 	}
 }
 
@@ -118,8 +118,8 @@ void AWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
 {
 	if (HasAuthority())	return;
 	Ammo = ServerAmmo;
-	Sequence--;
-	Ammo -= Sequence; // if client has more requests, then ammo will be reduced
+	FireSequence--;
+	Ammo -= FireSequence; // if client has more requests, then ammo will be reduced
 	SetHUDAmmo();
 }
 
@@ -127,19 +127,19 @@ void AWeapon::AddAmmo(int32 AmmoToAdd)
 {
 	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
 	SetHUDAmmo();
-	ClientAddAmmo(AmmoToAdd);
+	// ClientAddAmmo(AmmoToAdd);
 }
 
-void AWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
-{
-	if (HasAuthority())	return;
-	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
-	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull() && WeaponType == EWeaponType::EWT_ShotGun) {
-		BlasterOwnerCharacter->GetCombat()->JumpToShotgunEnd();
-	}
-	SetHUDAmmo();
-}
+// void AWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
+// {
+// 	if (HasAuthority())	return;
+// 	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
+// 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+// 	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull() && WeaponType == EWeaponType::EWT_ShotGun) {
+// 		BlasterOwnerCharacter->GetCombat()->JumpToShotgunEnd();
+// 	}
+// 	SetHUDAmmo();
+// }
 
 void AWeapon::SetHUDAmmo()
 {

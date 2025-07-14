@@ -163,13 +163,13 @@ private:
 
 	// The number of unprocessed server requests for Ammo
 	// Incremented in SpendRound, decremented in ClientUpdateAmmo
-	int32 Sequence = 0;
+	int32 FireSequence = 0;
 	
 	UFUNCTION(Client, Reliable)
 	void ClientUpdateAmmo(int32 ServerAmmo);
 
-	UFUNCTION(Client, Reliable)
-	void ClientAddAmmo(int32 AmmoToAdd);
+	// UFUNCTION(Client, Reliable)
+	// void ClientAddAmmo(int32 AmmoToAdd);
 	
 	// use client prediction, otherwise ammo value have delay 
 	// UFUNCTION()

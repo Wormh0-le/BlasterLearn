@@ -32,19 +32,17 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (Character) {
+	if (Character)
+	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
-		if (Character->GetFollowCamera()) {
+		if (Character->GetFollowCamera())
+		{
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
 		}
-		if (Character->HasAuthority())
-		{
-			InitializeCarriedAmmo();
-		}
+		InitializeCarriedAmmo();
 	}
-	
 }
 
 // Called every frame
@@ -199,25 +197,26 @@ bool UCombatComponent::CanFire()
 	if (EquippedWeapon == nullptr)	return false;
 	// Shotgun can interupt reload
 	bool bShotgunReloading = CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun;
+	if (bShotgunReloading)	return true;
 	if (bLocallyReloading)	return false;
-	return !EquippedWeapon->IsEmpty() && bCanFire && (CombatState == ECombatState::ECS_Unoccupied || bShotgunReloading);
+	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
-void UCombatComponent::OnRep_CarriedAmmo()
-{
-	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
-	if (Controller)
-	{
-		Controller->SetHUDCarriedAmmo(CarriedAmmo);
-	}
-	bool bJumpToShotgunEnd = CombatState == ECombatState::ECS_Reloading &&
-		EquippedWeapon && 
-		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun && 
-		CarriedAmmo == 0;
-	if (bJumpToShotgunEnd) {
-		JumpToShotgunEnd();
-	}
-}
+// void UCombatComponent::OnRep_CarriedAmmo()
+// {
+// 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+// 	if (Controller)
+// 	{
+// 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+// 	}
+// 	bool bJumpToShotgunEnd = CombatState == ECombatState::ECS_Reloading &&
+// 		EquippedWeapon && 
+// 		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun && 
+// 		CarriedAmmo == 0;
+// 	if (bJumpToShotgunEnd) {
+// 		JumpToShotgunEnd();
+// 	}
+// }
 
 void UCombatComponent::InitializeCarriedAmmo()
 {
@@ -641,7 +640,6 @@ void UCombatComponent::OnRep_CombatState()
 		if (Character && !Character->IsLocallyControlled())
 		{
 			Character->PlaySwapMontage();
-			
 		}
 		break;
 	}
@@ -692,8 +690,8 @@ void UCombatComponent::FinishReloading()
 	bLocallyReloading = false;
 	if (Character->HasAuthority()) {
 		CombatState = ECombatState::ECS_Unoccupied;
-		UpdateAmmoValues();
 	}
+	UpdateAmmoValues();
 	if (bFireButtonPressed) {
 		Fire();
 	}
@@ -731,10 +729,12 @@ void UCombatComponent::SwapAttachedWeapon()
 void UCombatComponent::UpdateAmmoValues()
 {
 	if (Character == nullptr || EquippedWeapon == nullptr)	return;
-	int32 ReloadAmount = AmountToReload();
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())) {
-		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount;
-		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	EWeaponType EquippedWeaponType = EquippedWeapon->GetWeaponType();
+	bool bShotgun = EquippedWeaponType == EWeaponType::EWT_ShotGun;
+	int32 ReloadAmount = bShotgun ? 1 : AmountToReload();
+	if (CarriedAmmoMap.Contains(EquippedWeaponType)) {
+		CarriedAmmoMap[EquippedWeaponType] -= ReloadAmount;
+		CarriedAmmo = CarriedAmmoMap[EquippedWeaponType];
 	}
 
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -744,27 +744,71 @@ void UCombatComponent::UpdateAmmoValues()
 	}
 
 	EquippedWeapon->AddAmmo(ReloadAmount);
+	if (bShotgun)
+	{
+		bCanFire = true;
+		if (EquippedWeapon->IsFull() || CarriedAmmo == 0) {
+			JumpToShotgunEnd();
+		}	
+	}
+	if (Character->HasAuthority())
+	{
+		ClientUpdateAmmoValues(ReloadAmount);
+	}
+	else
+	{
+		ReloadSequence += ReloadAmount;
+	}
 }
 
-void UCombatComponent::UpdateShotgunAmmoValues()
+void UCombatComponent::ClientUpdateAmmoValues_Implementation(int32 ServerReloadAmount)
 {
-	if (Character == nullptr || EquippedWeapon == nullptr)	return;
-	// int32 ReloadAmount = AmountToReload();
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())) {
-		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
-		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	if (Character == nullptr || Character->HasAuthority() || EquippedWeapon == nullptr)	return;
+	EWeaponType EquippedWeaponType = EquippedWeapon->GetWeaponType();
+	bool bShotgun = EquippedWeaponType == EWeaponType::EWT_ShotGun;
+	int32 ReloadAmount = ServerReloadAmount;
+	ReloadSequence -= ServerReloadAmount;
+	ReloadAmount -= ReloadSequence;
+	if (CarriedAmmoMap.Contains(EquippedWeaponType)) {
+		CarriedAmmoMap[EquippedWeaponType] -= ReloadAmount;
+		CarriedAmmo = CarriedAmmoMap[EquippedWeaponType];
 	}
+
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 	if (Controller)
 	{
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
 	}
-	EquippedWeapon->AddAmmo(1);
-	bCanFire = true;
-	if (EquippedWeapon->IsFull() || CarriedAmmo == 0) {
-		JumpToShotgunEnd();
+
+	EquippedWeapon->AddAmmo(ReloadAmount);
+	if (bShotgun)
+	{
+		bCanFire = true;
+		if (EquippedWeapon->IsFull() || CarriedAmmo == 0) {
+			JumpToShotgunEnd();
+		}	
 	}
 }
+
+// void UCombatComponent::UpdateShotgunAmmoValues()
+// {
+// 	if (Character == nullptr || EquippedWeapon == nullptr)	return;
+// 	// int32 ReloadAmount = AmountToReload();
+// 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())) {
+// 		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+// 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+// 	}
+// 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+// 	if (Controller)
+// 	{
+// 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+// 	}
+// 	EquippedWeapon->AddAmmo(1);
+// 	bCanFire = true;
+// 	if (EquippedWeapon->IsFull() || CarriedAmmo == 0) {
+// 		JumpToShotgunEnd();
+// 	}
+// }
 
 void UCombatComponent::JumpToShotgunEnd()
 {
@@ -779,7 +823,7 @@ void UCombatComponent::JumpToShotgunEnd()
 void UCombatComponent::ShotgunShellReload()
 {
 	if(Character && Character->HasAuthority() && !EquippedWeapon->IsFull()) {
-		UpdateShotgunAmmoValues();
+		UpdateAmmoValues();
 	}
 	
 }
@@ -895,7 +939,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, SecondaryWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
-	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
+	// DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME(UCombatComponent, Grenades);
 }

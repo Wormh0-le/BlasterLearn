@@ -203,11 +203,11 @@ private:
 	bool CanFire();
 
 	// for the current equipped weapon
-	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+	// UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
 	int32 CarriedAmmo;
 
-	UFUNCTION()
-	void OnRep_CarriedAmmo();
+	// UFUNCTION()
+	// void OnRep_CarriedAmmo();
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 
@@ -243,7 +243,15 @@ private:
 	UFUNCTION()
 	void OnRep_CombatState();
 	void UpdateAmmoValues();
-	void UpdateShotgunAmmoValues();
+	
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmoValues(int32 ServerReloadAmount);
+
+	// The number of unprocessed server requests for reload
+	// Incremented in UpdateAmmoValues, decremented in ClientUpdateAmmoValues
+	int32 ReloadSequence = 0;
+	
+	// void UpdateShotgunAmmoValues();
 	void InitialGrenades();
 
 	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
