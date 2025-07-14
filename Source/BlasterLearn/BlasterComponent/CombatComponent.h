@@ -7,6 +7,7 @@
 #include "BlasterLearn/HUD/BlasterHUD.h"
 #include "BlasterLearn/Weapon/WeaponTypes.h"
 #include "BlasterLearn/BlasterTypes/CombatState.h"
+#include "BlasterLearn/Character/BlasterCharacter.h"
 #include "CombatComponent.generated.h"
 
 
@@ -98,6 +99,12 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
     void FinishReloading();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSwap();
+
+	UFUNCTION(BlueprintCallable)
+	void SwapAttachedWeapon();
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> GrenadeClass;

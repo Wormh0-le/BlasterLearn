@@ -29,10 +29,12 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
+	// Play montage
 	void PlayFireMontage(bool bAiming);
 	void PlayReloadMontage();
 	void PlayElimMontage();
 	void PlayThrowGrenadeMontage();
+	void PlaySwapMontage();
 
 	/*UFUNCTION(NetMulticast, Unreliable)
 	void MultiCastHit();*/
@@ -61,6 +63,8 @@ public:
 
 	UPROPERTY()
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
+
+	bool bFinishSwapping; 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -75,7 +79,7 @@ protected:
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
-	void EquipeButtonPressed();
+	void EquipButtonPressed();
 	void CrouchButtonPressed();
 	void ReloadButtonPressed();
 	void AimButtonPressed();
@@ -202,6 +206,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ThrowGrenadeMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* SwapMontage;
 	
 	void HideCameraIfCharacterClose();
 

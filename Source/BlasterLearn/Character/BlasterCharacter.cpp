@@ -256,6 +256,15 @@ void ABlasterCharacter::PlayThrowGrenadeMontage()
 	}
 }
 
+void ABlasterCharacter::PlaySwapMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && SwapMontage)
+	{
+		AnimInstance->Montage_Play(SwapMontage);
+	}
+}
+
 void ABlasterCharacter::PlayHitReactMontage()
 {
 	if (Combat == nullptr)	return;
@@ -531,7 +540,7 @@ void ABlasterCharacter::LookUp(float Value)
 	AddControllerPitchInput(Value);
 }
 
-void ABlasterCharacter::EquipeButtonPressed()
+void ABlasterCharacter::EquipButtonPressed()
 {
 	if (bDisableGameplay) return;
 	if (Combat) {
@@ -539,8 +548,17 @@ void ABlasterCharacter::EquipeButtonPressed()
 		// 	Combat->EquipWeapon(OverlappingWeapon);
 		// }
 		// else {
-		ServerEquippedButtonPressed();
+		if (Combat->CombatState == ECombatState::ECS_Unoccupied) ServerEquippedButtonPressed();
 		// }
+		bool bSwap = Combat->CanSwapWeapons() && !HasAuthority() &&
+			Combat->CombatState == ECombatState::ECS_Unoccupied &&
+			OverlappingWeapon == nullptr;
+		if (bSwap)
+		{
+			PlaySwapMontage();
+			Combat->CombatState = ECombatState::ECS_SwappingWeapons;
+			bFinishSwapping = false;
+		}
 	}
 }
 
@@ -897,7 +915,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &ABlasterCharacter::LookUp);
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &ABlasterCharacter::LookUp);
 	
-	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipeButtonPressed);
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ABlasterCharacter::CrouchButtonPressed);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
