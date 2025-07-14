@@ -487,12 +487,11 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	DropEquippedWeapon();
 
 	EquippedWeapon = WeaponToEquip;
+	// owner has been replicated
+	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 
 	AttachActorToRightHand(EquippedWeapon);
-	
-	// owner has been replicated
-	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
 
 	UpdateCarriedAmmo();
@@ -504,10 +503,10 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 {
 	if (WeaponToEquip == nullptr) return;
 	SecondaryWeapon = WeaponToEquip;
+	SecondaryWeapon->SetOwner(Character);
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackpack(WeaponToEquip);
-
-	SecondaryWeapon->SetOwner(Character);
+	
 	PlayEquipWeaponSound(SecondaryWeapon);
 }
 
