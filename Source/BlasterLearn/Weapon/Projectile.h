@@ -27,6 +27,7 @@ public:
 	float InitialSpeed = 15000;
 	
 	float Damage = 20.f;
+	float HeadShotDamage = 40.f;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
