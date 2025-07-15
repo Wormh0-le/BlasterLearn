@@ -45,6 +45,7 @@ protected:
 	void CheckPing(float DeltaTime);
 	void SetHUDTime();
 	void PollInit();
+	virtual void SetupInputComponent() override;
 
 	// sync time between client and server
 
@@ -72,6 +73,8 @@ protected:
 	void HighPingWarning();
 
 	void StopHighPingWarning();
+
+	void ShowReturnToMainMenu();
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
@@ -132,4 +135,12 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	float HighPingThreshold = 50.f;
+
+	bool bReturnToMainMenuOpen = false;
+	
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ReturnToMainMenuClass;
+
+	UPROPERTY()
+	class UReturnToMainMenu* ReturnToMainMenuWidget;
 };

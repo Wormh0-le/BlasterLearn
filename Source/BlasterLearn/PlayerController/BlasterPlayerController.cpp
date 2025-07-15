@@ -13,6 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "BlasterLearn/GameState/BlasterGameState.h"
+#include "BlasterLearn/HUD/ReturnToMainMenu.h"
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
 
@@ -235,6 +236,13 @@ void ABlasterPlayerController::PollInit()
 	}
 }
 
+void ABlasterPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (InputComponent == nullptr)	return;
+	InputComponent->BindAction("Quit", IE_Pressed, this, &ABlasterPlayerController::ShowReturnToMainMenu);
+}
+
 void ABlasterPlayerController::HighPingWarning()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
@@ -262,6 +270,27 @@ void ABlasterPlayerController::StopHighPingWarning()
 			BlasterHUD->CharacterOverlay->StopAnimation(BlasterHUD->CharacterOverlay->HighPingAnimation);	
 		}
 		
+	}
+}
+
+void ABlasterPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuClass == nullptr)	return;
+	if (ReturnToMainMenuWidget == nullptr)
+	{
+		ReturnToMainMenuWidget = CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuClass);
+	}
+	if (ReturnToMainMenuWidget)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenuWidget->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenuWidget->MenuTeardown();	
+		}
 	}
 }
 
