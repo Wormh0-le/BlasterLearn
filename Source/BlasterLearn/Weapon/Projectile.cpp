@@ -79,6 +79,10 @@ void AProjectile::SpawnTrailSystem()
 
 void AProjectile::ExplodeDamge()
 {
+	// TODO: implement SSR similar with hitscan weapon:
+	// 1. use UKismetSystemLibrary::SphereOverlapActors() get all blasterCharacter
+	// 2. use UKismetSystemLibrary::SphereTraceSingle() to check ECC_HitBox in server  
+	
 	APawn* FiringPawn = GetInstigator();
 	if (FiringPawn) {
 		AController* FiringController = FiringPawn->GetController();

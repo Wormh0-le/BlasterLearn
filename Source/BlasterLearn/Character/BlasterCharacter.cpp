@@ -549,11 +549,12 @@ void ABlasterCharacter::EquipButtonPressed()
 		// }
 		// else {
 		// TODO: client-side prediction for equip weapon
-		if (Combat->CombatState == ECombatState::ECS_Unoccupied) ServerEquippedButtonPressed();
+		if (Combat->CombatState == ECombatState::ECS_Unoccupied && !Combat->bLocallyReloading && bFinishSwapping) ServerEquippedButtonPressed();
 		// }
 		bool bSwap = Combat->CanSwapWeapons() && !HasAuthority() &&
 			Combat->CombatState == ECombatState::ECS_Unoccupied &&
-			OverlappingWeapon == nullptr;
+			OverlappingWeapon == nullptr &&
+			!Combat->bLocallyReloading && bFinishSwapping;
 		if (bSwap)
 		{
 			PlaySwapMontage();

@@ -18,7 +18,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 		// From muzzle flash socket to hit location from traceundercrosshairs
 		FVector ToTarget = HitTarget - SocketTransform.GetLocation();
 		FRotator TargetRotation = ToTarget.Rotation();
-		
+		// can implement projectile weapon ssr similar with hitscan weapon. If scene can be destroyed?
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = GetOwner();
 		SpawnParams.Instigator = InstigatorPawn;

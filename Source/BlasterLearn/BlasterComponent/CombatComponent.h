@@ -245,7 +245,7 @@ private:
 	void UpdateAmmoValues();
 	
 	UFUNCTION(Client, Reliable)
-	void ClientUpdateAmmoValues(int32 ServerReloadAmount);
+	void ClientUpdateAmmoValues(int32 ServerCarriedAmmo, int32 ServerReloadAmount);
 
 	// The number of unprocessed server requests for reload
 	// Incremented in UpdateAmmoValues, decremented in ClientUpdateAmmoValues

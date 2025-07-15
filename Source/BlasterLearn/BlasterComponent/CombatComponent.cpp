@@ -199,6 +199,7 @@ bool UCombatComponent::CanFire()
 	bool bShotgunReloading = CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun;
 	if (bShotgunReloading)	return true;
 	if (bLocallyReloading)	return false;
+	if (Character && !Character->bFinishSwapping)	return false;
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
@@ -428,17 +429,6 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	Character->bUseControllerRotationYaw = true;
 }
 
-void UCombatComponent::SwapWeapons()
-{
-	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr)	return;
-
-	Character->PlaySwapMontage();
-	Character->bFinishSwapping = false;
-	CombatState = ECombatState::ECS_SwappingWeapons;
-	// descrease afterimage
-	if (SecondaryWeapon) SecondaryWeapon->EnableCustomDepth(false);
-}
-
 void UCombatComponent::ResetCombat()
 {
 	Character->GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -663,7 +653,7 @@ void UCombatComponent::Reload()
 	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsFull() && !bLocallyReloading)
 	{
 		ServerReload();
-		HandleReload();
+		if (!Character->HasAuthority())	HandleReload();
 		bLocallyReloading = true;
 	}
 }
@@ -680,7 +670,10 @@ void UCombatComponent::HandleReload()
 {
 	if (Character)
 	{
-		Character->PlayReloadMontage();	
+		Character->PlayReloadMontage();
+		if (Character->HasAuthority()) {
+			CombatState = ECombatState::ECS_Unoccupied;
+		}
 	}
 }
 
@@ -688,13 +681,22 @@ void UCombatComponent::FinishReloading()
 {
 	if (Character == nullptr) return;
 	bLocallyReloading = false;
-	if (Character->HasAuthority()) {
-		CombatState = ECombatState::ECS_Unoccupied;
-	}
+	
 	UpdateAmmoValues();
 	if (bFireButtonPressed) {
 		Fire();
 	}
+}
+
+void UCombatComponent::SwapWeapons()
+{
+	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr)	return;
+
+	Character->PlaySwapMontage();
+	Character->bFinishSwapping = false;
+	CombatState = ECombatState::ECS_SwappingWeapons;
+	// descrease afterimage
+	if (SecondaryWeapon) SecondaryWeapon->EnableCustomDepth(false);
 }
 
 void UCombatComponent::FinishSwap()
@@ -753,7 +755,7 @@ void UCombatComponent::UpdateAmmoValues()
 	}
 	if (Character->HasAuthority())
 	{
-		ClientUpdateAmmoValues(ReloadAmount);
+		ClientUpdateAmmoValues(CarriedAmmo, ReloadAmount);
 	}
 	else
 	{
@@ -761,17 +763,18 @@ void UCombatComponent::UpdateAmmoValues()
 	}
 }
 
-void UCombatComponent::ClientUpdateAmmoValues_Implementation(int32 ServerReloadAmount)
+void UCombatComponent::ClientUpdateAmmoValues_Implementation(int32 ServerCarriedAmmo, int32 ServerReloadAmount)
 {
 	if (Character == nullptr || Character->HasAuthority() || EquippedWeapon == nullptr)	return;
 	EWeaponType EquippedWeaponType = EquippedWeapon->GetWeaponType();
 	bool bShotgun = EquippedWeaponType == EWeaponType::EWT_ShotGun;
 	int32 ReloadAmount = ServerReloadAmount;
+	CarriedAmmo = ServerCarriedAmmo;
 	ReloadSequence -= ServerReloadAmount;
 	ReloadAmount -= ReloadSequence;
+	CarriedAmmo -= ReloadSequence;
 	if (CarriedAmmoMap.Contains(EquippedWeaponType)) {
-		CarriedAmmoMap[EquippedWeaponType] -= ReloadAmount;
-		CarriedAmmo = CarriedAmmoMap[EquippedWeaponType];
+		CarriedAmmoMap[EquippedWeaponType] = CarriedAmmo;
 	}
 
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
