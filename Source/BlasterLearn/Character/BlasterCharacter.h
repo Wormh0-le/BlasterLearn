@@ -10,6 +10,8 @@
 #include "Components/TimelineComponent.h"
 #include "BlasterCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+
 UCLASS()
 class BLASTERLEARN_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -41,10 +43,15 @@ public:
 
 	virtual void OnRep_ReplicatedMovement() override;
 
-	void Elim();
+	void Elim(bool bPlayerLeftGame);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastElim();
+	void MultiCastElim(bool bPlayerLeftGame);
+
+	FOnLeftGame OnLeftGame;
+	
+	UFUNCTION(Server, Reliable)
+	void ServerLeaveGame();
 
 	virtual void Destroyed() override;
 	void RotateInPlace(float DeltaTime);
@@ -64,7 +71,7 @@ public:
 	UPROPERTY()
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
 
-	bool bFinishSwapping = true; 
+	bool bFinishSwapping = true;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -277,6 +284,8 @@ private:
 	// Material Instance set on the blueprint, used with the dynamic material instance
 	UPROPERTY(EditAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
+
+	bool bLeftGame = false;
 
 	// Elim
 	UPROPERTY(EditAnywhere)
