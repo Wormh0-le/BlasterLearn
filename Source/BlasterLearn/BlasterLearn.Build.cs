@@ -8,7 +8,7 @@ public class BlasterLearn : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Niagara", "XMultiplayerSessions", "OnlineSubsystem", "OnlineSubsystemSteam" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
