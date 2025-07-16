@@ -22,6 +22,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "BlasterLearn/GameState/BlasterGameState.h"
 
 
 // Sets default values
@@ -430,6 +433,36 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
+void ABlasterCharacter::MulticastGainTheLead_Implementation()
+{
+	if (CrownSystem == nullptr)	return;
+	if (CrownComponent == nullptr)
+	{
+		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			CrownSystem,
+			GetCapsuleComponent(),
+			FName(),
+			GetActorLocation() + FVector(0.f, 0.f, 110.f),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+	if (CrownComponent)
+	{
+		CrownComponent->Activate();
+	}
+}
+
+void ABlasterCharacter::MulticastLostTheLead_Implementation()
+{
+	if (CrownComponent)
+	{
+		// will not spawn after destroy,so use DeactivateImmediate 
+		CrownComponent->DeactivateImmediate();
+	}
+}
+
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
@@ -834,6 +867,14 @@ void ABlasterCharacter::PollInit()
 		{
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+		}
+		ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+		if (BlasterGameState)
+		{
+			if (BlasterGameState->TopScoringPlayers.Contains(BlasterPlayerState))
+			{
+				MulticastGainTheLead();
+			}
 		}
 	}
 	if (BlasterPlayerController == nullptr)

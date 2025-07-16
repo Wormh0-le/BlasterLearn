@@ -72,6 +72,12 @@ public:
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
 
 	bool bFinishSwapping = true;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastGainTheLead();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastLostTheLead();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -300,6 +306,12 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* CrownSystem;
+
+	UPROPERTY()
+	class UNiagaraComponent* CrownComponent;
+	
 	// Grenade
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* AttachedGrenade;

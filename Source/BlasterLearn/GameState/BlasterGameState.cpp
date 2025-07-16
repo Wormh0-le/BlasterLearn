@@ -2,6 +2,7 @@
 
 
 #include "BlasterGameState.h"
+#include "BlasterLearn/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
 
@@ -20,6 +21,14 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 	}else if (PlayerScore == TopScore) {
 		TopScoringPlayers.AddUnique(ScoringPlayer);
 	} else if (PlayerScore > TopScore) {
+		for (auto CurrentTopPlayerState : TopScoringPlayers)
+		{
+			ABlasterCharacter* CurrentTopCharacter = Cast<ABlasterCharacter>(CurrentTopPlayerState->GetPawn());
+			if (CurrentTopCharacter)
+			{
+				CurrentTopCharacter->MulticastLostTheLead();
+			}
+		}
 		TopScoringPlayers.Empty();
 		TopScoringPlayers.AddUnique(ScoringPlayer);
 		TopScore = PlayerScore;
