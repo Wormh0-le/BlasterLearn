@@ -10,7 +10,6 @@
 #include "BlasterLearn/GameState/BlasterGameState.h"
 
 
-
 namespace MatchState {
 	const FName Cooldown = FName("Cooldown");	
 }
@@ -94,6 +93,11 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 		ElimmedCharacter->MulticastLostTheLead();
 		ElimmedCharacter->Elim(false);
 	}
+	if (BlasterGameState)
+	{
+		FString ElimMessage = FString::Printf(TEXT("%s eliminated %s"), *AttackerPlayerState->GetPlayerName(), *VictimPlayerState->GetPlayerName());
+		BlasterGameState->MulticastBroadcastMessage("System", ElimMessage);
+	}
 }
 
 void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController)
@@ -123,5 +127,9 @@ void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* LeavingPlayerState)
 	{
 		CharacterLeaving->Elim(true);
 	}
-	
+	if (BlasterGameState)
+	{
+		FString ElimMessage = FString::Printf(TEXT("%s leave the match"), *LeavingPlayerState->GetPlayerName());
+		BlasterGameState->MulticastBroadcastMessage("System", ElimMessage);
+	}
 }

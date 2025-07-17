@@ -21,6 +21,9 @@ public:
 
 	void UpdateTopScore(ABlasterPlayerState* ScoringPlayer);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastBroadcastMessage(const FString& MessageRole, const FString& MessageInfo);
+
 private:
 	float TopScore = 0.f;
 };

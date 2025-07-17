@@ -13,6 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "BlasterLearn/GameState/BlasterGameState.h"
+#include "BlasterLearn/HUD/ChatOverlay.h"
 #include "BlasterLearn/HUD/ReturnToMainMenu.h"
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
@@ -463,6 +464,18 @@ void ABlasterPlayerController::SetHUDGrenades(int32 Grenades) {
 	} else {
 		bInitializeGrenades = true;
 		HUDGrenades = Grenades;
+	}
+}
+
+void ABlasterPlayerController::ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->ChatBoard;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->ChatBoard->AddMessage(MessageTime, MessageRole, MessageInfo);
 	}
 }
 

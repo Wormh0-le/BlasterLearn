@@ -3,6 +3,7 @@
 
 #include "BlasterGameState.h"
 #include "BlasterLearn/Character/BlasterCharacter.h"
+#include "BlasterLearn/PlayerController/BlasterPlayerController.h"
 #include "Net/UnrealNetwork.h"
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
 
@@ -32,5 +33,21 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 		TopScoringPlayers.Empty();
 		TopScoringPlayers.AddUnique(ScoringPlayer);
 		TopScore = PlayerScore;
+	}
+}
+
+void ABlasterGameState::MulticastBroadcastMessage_Implementation(const FString& MessageRole, const FString& MessageInfo)
+{
+	for (APlayerState* PlayerState : PlayerArray)
+	{
+		if (ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerState->GetPlayerController()))
+		{
+			if (BlasterPlayerController->IsLocalPlayerController())
+			{
+				FDateTime CurrentTime = FDateTime::Now();
+				FString TimeString = CurrentTime.ToString(TEXT("[%y-%m-%d %H:%M:%S]"));
+				BlasterPlayerController->ShowMessage(TimeString, MessageRole, MessageInfo);
+			}
+		}
 	}
 }

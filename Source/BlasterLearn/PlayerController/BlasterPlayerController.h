@@ -25,6 +25,9 @@ public:
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
+
+	void ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
+	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
