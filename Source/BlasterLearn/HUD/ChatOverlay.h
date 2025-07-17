@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/EditableTextBox.h"
 #include "ChatOverlay.generated.h"
 
 /**
@@ -15,6 +16,16 @@ class BLASTERLEARN_API UChatOverlay : public UUserWidget
 	GENERATED_BODY()
 public:
 	void AddMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
+
+	void EnableChatInput();
+
+	UFUNCTION()
+	void OnTextCommitted(const FText& Text, ETextCommit::Type CommitMethod);
+
+	virtual FReply NativeOnPreviewKeyDown( const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	UPROPERTY(meta=(BindWidget))
+	UEditableTextBox* ChatInput;
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
@@ -22,11 +33,10 @@ protected:
 	
 	UPROPERTY(meta=(BindWidget))
 	class UImage* ChatHistoryBackground;
-	
-	UPROPERTY(meta=(BindWidget))
-	class UEditableTextBox* ChatInput;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "ScrollItemSetting")
 	TSubclassOf<UUserWidget> MessageItemWidgetClass;
+
+	bool bIsChatting = false;
 };

@@ -12,7 +12,7 @@ void UChatMessageItem::Setup(const FString& MessageTime, const FString& MessageR
 	}
 	if (RoleText)
 	{
-		RoleText->SetText(FText::FromString(MessageRole));
+		RoleText->SetText(FText::FromString(MessageRole + ":"));
 	}
 	if (MessageText)
 	{

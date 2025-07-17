@@ -184,8 +184,8 @@ void ABlasterPlayerController::HandleCooldown()
 			FString AnnouncementText("New Match Start In:");
 			BlasterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 			
-			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-			ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>(); 
+			BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
+			BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState; 
 			if (BlasterGameState) {
 				TArray<ABlasterPlayerState*> TopPlayers = BlasterGameState->TopScoringPlayers;
 				FString InfoTextString;
@@ -242,6 +242,7 @@ void ABlasterPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 	if (InputComponent == nullptr)	return;
 	InputComponent->BindAction("Quit", IE_Pressed, this, &ABlasterPlayerController::ShowReturnToMainMenu);
+	InputComponent->BindAction("ToggleChat", IE_Pressed, this, &ABlasterPlayerController::ToggleChat);
 }
 
 void ABlasterPlayerController::HighPingWarning()
@@ -476,6 +477,27 @@ void ABlasterPlayerController::ShowMessage(const FString& MessageTime, const FSt
 	if (bHUDValid)
 	{
 		BlasterHUD->CharacterOverlay->ChatBoard->AddMessage(MessageTime, MessageRole, MessageInfo);
+	}
+}
+
+void ABlasterPlayerController::ToggleChat()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->ChatBoard;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->ChatBoard->EnableChatInput();
+	}
+}
+
+void ABlasterPlayerController::ServerSendMessage_Implementation(const FString& MessageInfo)
+{
+	BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
+	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
+	if (BlasterGameState && BlasterPlayerState) {
+		BlasterGameState->MulticastBroadcastMessage(BlasterPlayerState->GetPlayerName(), MessageInfo);
 	}
 }
 

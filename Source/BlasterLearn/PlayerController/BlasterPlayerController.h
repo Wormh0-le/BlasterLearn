@@ -27,6 +27,12 @@ public:
 	void SetHUDGrenades(int32 Grenades);
 
 	void ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
+
+	UFUNCTION()
+	void ToggleChat();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSendMessage(const FString& MessageInfo);
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaTime) override;
@@ -84,6 +90,12 @@ private:
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;
+
+	UPROPERTY()
+	class ABlasterGameState* BlasterGameState;
+
+	UPROPERTY()
+	class ABlasterPlayerState* BlasterPlayerState;
 
 	float LevelStartingTime = 0.f;
 	float MatchTime = 0.f;
