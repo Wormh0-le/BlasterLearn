@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/EditableTextBox.h"
-#include "ChatOverlay.generated.h"
+#include "ChatWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BLASTERLEARN_API UChatOverlay : public UUserWidget
+class BLASTERLEARN_API UChatWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:

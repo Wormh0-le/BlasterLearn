@@ -5,7 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
 #include "Announcement.h"
-#include "ChatOverlay.h"
+#include "ChatWidget.h"
 #include "Components/EditableTextBox.h"
 
 
@@ -24,7 +24,7 @@ void ABlasterHUD::AddCharacterOverlay()
 	}
 	if (CharacterOverlay && CharacterOverlay->ChatBoard && CharacterOverlay->ChatBoard->ChatInput)
 	{
-		CharacterOverlay->ChatBoard->ChatInput->OnTextCommitted.AddDynamic(CharacterOverlay->ChatBoard, &UChatOverlay::OnTextCommitted);
+		CharacterOverlay->ChatBoard->ChatInput->OnTextCommitted.AddDynamic(CharacterOverlay->ChatBoard, &UChatWidget::OnTextCommitted);
 	}
 }
 

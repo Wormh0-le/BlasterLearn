@@ -52,5 +52,5 @@ public:
 	UWidgetAnimation* HighPingAnimation;
 
 	UPROPERTY(meta = (BindWidget))
-	class UChatOverlay* ChatBoard;
+	class UChatWidget* ChatBoard;
 };

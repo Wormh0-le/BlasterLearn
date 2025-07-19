@@ -13,7 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "BlasterLearn/GameState/BlasterGameState.h"
-#include "BlasterLearn/HUD/ChatOverlay.h"
+#include "BlasterLearn/HUD/ChatWidget.h"
 #include "BlasterLearn/HUD/ReturnToMainMenu.h"
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
