@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
 #include "Announcement.h"
+#include "BannerWidget.h"
 #include "ChatWidget.h"
 #include "Components/EditableTextBox.h"
 
@@ -34,6 +35,25 @@ void ABlasterHUD::AddAnnouncement()
 	if (PlayerController && AnnouncementClass) {
 		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
 		Announcement->AddToViewport();
+	}
+}
+
+void ABlasterHUD::DisplayKillEvent()
+{
+	if (CharacterOverlay && CharacterOverlay->KillBanner && !bDisplayKillEvent)
+	{
+		FKillEventMessage KillEventMessage;
+		if (!CharacterOverlay->KillBanner->KillEventQueue.Dequeue(KillEventMessage))	return;
+		bDisplayKillEvent = true;
+        CharacterOverlay->KillBanner->UpdateBanner(KillEventMessage);
+        float KillEventDuration = CharacterOverlay->KillBanner->GetDisplayDuration();
+        CharacterOverlay->PlayAnimation(CharacterOverlay->KillBannerAnimation, 0.f, 1, EUMGSequencePlayMode::Forward, 1.f);
+        GetWorldTimerManager().SetTimer(KillEventTimer, [&]()
+        {
+            CharacterOverlay->PlayAnimation(CharacterOverlay->KillBannerAnimation, 0.f, 1, EUMGSequencePlayMode::Reverse, 1.f);
+            bDisplayKillEvent = false;
+            DisplayKillEvent();
+        }, KillEventDuration, false);
 	}
 }
 

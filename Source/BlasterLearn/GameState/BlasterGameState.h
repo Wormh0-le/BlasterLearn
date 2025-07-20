@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
+#include "BlasterLearn/BlasterTypes/KillEventInfo.h"
 #include "BlasterGameState.generated.h"
+
 
 /**
  * 
@@ -23,6 +25,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastBroadcastMessage(const FString& MessageRole, const FString& MessageInfo);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastBroadcastKillEvent(const FKillEventMessage& KillEventMessage);
 
 private:
 	float TopScore = 0.f;

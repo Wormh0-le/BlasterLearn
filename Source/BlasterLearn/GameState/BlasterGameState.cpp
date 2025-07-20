@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
 
+
 void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -33,6 +34,20 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 		TopScoringPlayers.Empty();
 		TopScoringPlayers.AddUnique(ScoringPlayer);
 		TopScore = PlayerScore;
+	}
+}
+
+void ABlasterGameState::MulticastBroadcastKillEvent_Implementation(const FKillEventMessage& KillEventMessage)
+{
+	for (APlayerState* PlayerState : PlayerArray)
+	{
+		if (ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerState->GetPlayerController()))
+		{
+			if (BlasterPlayerController->IsLocalPlayerController())
+			{
+				BlasterPlayerController->BroadcastKillEventMessage(KillEventMessage);
+			}
+		}
 	}
 }
 

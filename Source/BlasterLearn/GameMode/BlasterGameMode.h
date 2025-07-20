@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BlasterLearn/BlasterTypes/KillEventInfo.h"
 #include "GameFramework/GameMode.h"
 #include "BlasterGameMode.generated.h"
 

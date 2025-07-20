@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BlasterLearn/BlasterTypes/KillEventInfo.h"
 #include "GameFramework/HUD.h"
 #include "BlasterHUD.generated.h"
 
@@ -56,6 +57,8 @@ public:
 	class UAnnouncement* Announcement;
 
 	void AddAnnouncement();
+	
+	void DisplayKillEvent();
 protected:
 	virtual void BeginPlay() override;
 private:
@@ -65,7 +68,10 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 12.f;
-	
+
+	FTimerHandle KillEventTimer;
+
+	bool bDisplayKillEvent = false;
 public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 };

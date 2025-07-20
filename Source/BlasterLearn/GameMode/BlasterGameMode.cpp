@@ -74,6 +74,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
+		AttackerPlayerState->HandleScore();
 		BlasterGameState->UpdateTopScore(AttackerPlayerState);
 		if (BlasterGameState->TopScoringPlayers.Contains(AttackerPlayerState))
 		{
@@ -83,20 +84,35 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 				AttackerCharacter->MulticastGainTheLead();
 			}
 		}
+		FKillEventMessage KillEventMessage(AttackerPlayerState->GetPlayerName(), VictimPlayerState->GetPlayerName(), EKillEventType::Kill);
+		if (VictimPlayerState->GetConsecutiveScore() >= 3 && AttackerPlayerState->GetConsecutiveScore() < 1)
+		{
+			KillEventMessage.KillType = EKillEventType::Shutdown;
+		}
+		BlasterGameState->MulticastBroadcastKillEvent(KillEventMessage);
+		// Check for consecutive kills and combo kills
+		EKillEventType ConsecutiveKillType = AttackerPlayerState->GetConsecutiveKillType();
+		EKillEventType ComboKillType = AttackerPlayerState->GetComboKillType();
+		if (ComboKillType != EKillEventType::Default)
+		{
+			FKillEventMessage ComboKillEventMessage(AttackerPlayerState->GetPlayerName(), VictimPlayerState->GetPlayerName(), ComboKillType);
+			BlasterGameState->MulticastBroadcastKillEvent(ComboKillEventMessage);
+		}
+		if (ConsecutiveKillType != EKillEventType::Default)
+		{
+			FKillEventMessage ConsecutiveKillEventMessage(AttackerPlayerState->GetPlayerName(), VictimPlayerState->GetPlayerName(), ConsecutiveKillType);
+			BlasterGameState->MulticastBroadcastKillEvent(ConsecutiveKillEventMessage);
+		}
 	}
 	if (VictimPlayerState)
 	{
 		VictimPlayerState->AddToDefeats(1);
+		VictimPlayerState->ResetScoreStat();
 	}
 	
 	if (ElimmedCharacter) {
 		ElimmedCharacter->MulticastLostTheLead();
 		ElimmedCharacter->Elim(false);
-	}
-	if (BlasterGameState)
-	{
-		FString ElimMessage = FString::Printf(TEXT("%s eliminated %s"), *AttackerPlayerState->GetPlayerName(), *VictimPlayerState->GetPlayerName());
-		BlasterGameState->MulticastBroadcastMessage("System", ElimMessage);
 	}
 }
 

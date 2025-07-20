@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "BlasterLearn/BlasterTypes/KillEventInfo.h"
 #include "BlasterPlayerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bHighPing);
@@ -27,6 +28,8 @@ public:
 	void SetHUDGrenades(int32 Grenades);
 
 	void ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
+
+	void BroadcastKillEventMessage(const FKillEventMessage& KillEventMessage);
 
 	UFUNCTION()
 	void ToggleChat();

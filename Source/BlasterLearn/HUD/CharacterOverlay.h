@@ -53,4 +53,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UChatWidget* ChatBoard;
+
+	UPROPERTY(meta = (BindWidget))
+	class UBannerWidget* KillBanner;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* KillBannerAnimation;
 };

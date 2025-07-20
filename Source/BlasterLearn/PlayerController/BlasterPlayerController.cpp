@@ -13,6 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "BlasterLearn/GameState/BlasterGameState.h"
+#include "BlasterLearn/HUD/BannerWidget.h"
 #include "BlasterLearn/HUD/ChatWidget.h"
 #include "BlasterLearn/HUD/ReturnToMainMenu.h"
 #include "BlasterLearn/PlayerState/BlasterPlayerState.h"
@@ -477,6 +478,20 @@ void ABlasterPlayerController::ShowMessage(const FString& MessageTime, const FSt
 	if (bHUDValid)
 	{
 		BlasterHUD->CharacterOverlay->ChatBoard->AddMessage(MessageTime, MessageRole, MessageInfo);
+	}
+}
+
+void ABlasterPlayerController::BroadcastKillEventMessage(const FKillEventMessage& KillEventMessage)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->KillBanner;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->KillBanner->KillEventQueue.Enqueue(KillEventMessage);
+		BlasterHUD->CharacterOverlay->KillBanner->KillEventCount.Increment();
+		BlasterHUD->DisplayKillEvent();
 	}
 }
 
