@@ -156,7 +156,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
 
-	UPROPERTY(EditAnywhere)
+	// the throwed weapon need keep ammo
+	UPROPERTY(EditAnywhere, Replicated)
 	int32 Ammo;
 	
 	void SpendRound();

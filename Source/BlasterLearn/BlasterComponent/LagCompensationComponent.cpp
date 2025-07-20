@@ -82,7 +82,6 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharac
 	FServerSideRewindResult Confirm = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
 	if (Character && DamageCauser && Confirm.bHitConfirmed)
 	{
-		// TODO: if weapon is destroyed?
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
 			Confirm.bHeadShot ? DamageCauser->GetHeadShotDamage() : DamageCauser->GetDamage(),
@@ -342,22 +341,22 @@ FBatchServerSideRewindResult ULagCompensationComponent::BatchConfirmHit(const TA
 		EnableCharacterMeshCollision(CurFrame.Character, ECollisionEnabled::QueryAndPhysics);
 	}
  	return BatchConfirmHitResult;
-}
+} 
 
 void ULagCompensationComponent::ProjectileServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter,
 	const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime, AProjectile* DamageCauser)
 {
 	FServerSideRewindResult Confirm = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
-	if (Character && HitCharacter && Confirm.bHitConfirmed)
+	if (Character && DamageCauser && HitCharacter && Confirm.bHitConfirmed)
 	{
-		// TODO: if equipped weapon is dropped or swapped?
+		// if equipped weapon is dropped or swapped?
 		// sol1: use projectile, but projectile may have been destroyed
+		// sol: pass damage
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
-			// DamageCauser->Damage,
-			Confirm.bHeadShot ? Character->GetEquippedWeapon()->GetHeadShotDamage(): Character->GetEquippedWeapon()->GetDamage(),
+			Confirm.bHeadShot ? DamageCauser->HeadShotDamage: DamageCauser->Damage,
 			Character->Controller,
-			Character->GetEquippedWeapon(),
+			DamageCauser,
 			UDamageType::StaticClass()
 		);
 	}

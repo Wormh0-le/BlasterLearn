@@ -111,7 +111,7 @@ public:
 
 	// Shotgun, special hitscan etc
 	UFUNCTION(Server, Reliable)
-	void BatchServerScoreRequest(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime, class AWeapon* DamageCauser);
+	void BatchServerScoreRequest(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime, AWeapon* DamageCauser);
 	
 	FBatchServerSideRewindResult BatchServerSideRewind(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime);
 	FBatchServerSideRewindResult BatchConfirmHit(const TArray<FFramePackage>& FramePackages, 

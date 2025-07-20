@@ -101,7 +101,8 @@ void AWeapon::SpendRound()
 		ClientUpdateAmmo(Ammo);
 	} else
 	{
-		FireSequence++;
+		BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+		if (BlasterOwnerCharacter->IsLocallyControlled()) FireSequence++;
 	}
 }
 
@@ -303,6 +304,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 	DOREPLIFETIME(AWeapon, WeaponState);
 	DOREPLIFETIME_CONDITION(AWeapon, bUseServerSideRewind, COND_OwnerOnly);
+	DOREPLIFETIME(AWeapon, Ammo);
 }
 
 void AWeapon::ShowPickUpWidget(bool bShowPickupWidget)

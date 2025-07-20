@@ -196,8 +196,8 @@ bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr)	return false;
 	// Shotgun can interupt reload
-	bool bShotgunReloading = CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun;
-	if (bShotgunReloading)	return true;
+	bool bShotgunReloading = bLocallyReloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun;
+	if (!EquippedWeapon->IsEmpty() && bCanFire && bShotgunReloading)	return true;
 	if (bLocallyReloading)	return false;
 	if (Character && !Character->bFinishSwapping)	return false;
 	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
@@ -301,14 +301,12 @@ void UCombatComponent::LocalShotgunFire(const TArray<FVector_NetQuantize>& Scatt
 	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
 	if (Shotgun == nullptr)	return;
 	
-	bool bShotgunReloading = CombatState == ECombatState::ECS_Reloading;
-	if (Character && (CombatState == ECombatState::ECS_Unoccupied || bShotgunReloading))
+	if (Character && (CombatState == ECombatState::ECS_Unoccupied || CombatState == ECombatState::ECS_Reloading))
 	{
+		bLocallyReloading = false;
 		Character->PlayFireMontage(bAiming);
 		Shotgun->FireShotgun(ScatteredHitTargets);
-		if (bShotgunReloading) {
-			CombatState = ECombatState::ECS_Unoccupied;
-		}
+		CombatState = ECombatState::ECS_Unoccupied;
 	}
 }
 
@@ -682,7 +680,8 @@ void UCombatComponent::FinishReloading()
 	if (Character == nullptr) return;
 	bLocallyReloading = false;
 	
-	UpdateAmmoValues();
+	bool bShotgun = EquippedWeapon->GetWeaponType() == EWeaponType::EWT_ShotGun;
+	if (!bShotgun)	UpdateAmmoValues();
 	if (bFireButtonPressed) {
 		Fire();
 	}
@@ -690,7 +689,7 @@ void UCombatComponent::FinishReloading()
 
 void UCombatComponent::SwapWeapons()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr)	return;
+	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr || bLocallyReloading || !Character->bFinishSwapping)	return;
 
 	Character->PlaySwapMontage();
 	Character->bFinishSwapping = false;
@@ -759,7 +758,7 @@ void UCombatComponent::UpdateAmmoValues()
 	}
 	else
 	{
-		ReloadSequence += ReloadAmount;
+		if (Character->IsLocallyControlled()) ReloadSequence += ReloadAmount;
 	}
 }
 
@@ -767,10 +766,9 @@ void UCombatComponent::ClientUpdateAmmoValues_Implementation(int32 ServerCarried
 {
 	if (Character == nullptr || Character->HasAuthority() || EquippedWeapon == nullptr)	return;
 	EWeaponType EquippedWeaponType = EquippedWeapon->GetWeaponType();
-	bool bShotgun = EquippedWeaponType == EWeaponType::EWT_ShotGun;
 	int32 ReloadAmount = ServerReloadAmount;
 	CarriedAmmo = ServerCarriedAmmo;
-	ReloadSequence -= ServerReloadAmount;
+	ReloadSequence = FMath::Max(ReloadSequence - ServerReloadAmount, 0); // shotgun server animation may more quickly
 	ReloadAmount -= ReloadSequence;
 	CarriedAmmo -= ReloadSequence;
 	if (CarriedAmmoMap.Contains(EquippedWeaponType)) {
@@ -784,13 +782,6 @@ void UCombatComponent::ClientUpdateAmmoValues_Implementation(int32 ServerCarried
 	}
 
 	EquippedWeapon->AddAmmo(ReloadAmount);
-	if (bShotgun)
-	{
-		bCanFire = true;
-		if (EquippedWeapon->IsFull() || CarriedAmmo == 0) {
-			JumpToShotgunEnd();
-		}	
-	}
 }
 
 // void UCombatComponent::UpdateShotgunAmmoValues()
@@ -825,10 +816,10 @@ void UCombatComponent::JumpToShotgunEnd()
 
 void UCombatComponent::ShotgunShellReload()
 {
-	if(Character && Character->HasAuthority() && !EquippedWeapon->IsFull()) {
+	if(Character && !EquippedWeapon->IsFull() && CarriedAmmo > 0)
+	{
 		UpdateAmmoValues();
 	}
-	
 }
 
 void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
