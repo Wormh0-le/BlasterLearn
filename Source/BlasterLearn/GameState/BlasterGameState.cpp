@@ -37,6 +37,14 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 	}
 }
 
+void ABlasterGameState::OnRep_RedTeamScore()
+{
+}
+
+void ABlasterGameState::OnRep_BlueTeamScore()
+{
+}
+
 void ABlasterGameState::MulticastBroadcastKillEvent_Implementation(const FKillEventMessage& KillEventMessage)
 {
 	for (APlayerState* PlayerState : PlayerArray)
