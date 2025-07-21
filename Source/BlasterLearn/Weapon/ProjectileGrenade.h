@@ -20,10 +20,6 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
 #endif
-
-	float Damage = 120.f;
-	float HeadShotDamage = 200.f;
-	bool bFriendlyFire = true;
 protected:
 	virtual void BeginPlay() override;
 

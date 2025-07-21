@@ -26,6 +26,10 @@ public:
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
+	void HideTeamScores();
+	void InitTeamScores();
+	void SetHUDRedTeamScore(int32 RedScore);
+	void SetHUDBlueTeamScore(int32 BlueScore);
 
 	void ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
 
@@ -80,13 +84,15 @@ protected:
 	void ServerCheckMatchState();
 
 	UFUNCTION(Client, Reliable)
-	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime, float Cooldown);
+	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime, float Cooldown, bool bTeamsMatch);
 
 	void HighPingWarning();
 
 	void StopHighPingWarning();
 
 	void ShowReturnToMainMenu();
+	
+	bool bShowTeamScores = false;
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;

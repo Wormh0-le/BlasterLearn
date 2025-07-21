@@ -43,6 +43,12 @@ public:
 	UTextBlock* MatchCountdownText;
 
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* RedTeamScore;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* BlueTeamScore;
+
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* GrenadesText;
 
 	UPROPERTY(meta = (BindWidget))

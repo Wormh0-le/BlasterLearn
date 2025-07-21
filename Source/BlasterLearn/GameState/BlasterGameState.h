@@ -31,7 +31,12 @@ public:
 	void MulticastBroadcastKillEvent(const FKillEventMessage& KillEventMessage);
 
 
-	// Teams
+	/* 
+	* Teams
+	*/
+
+	void RedTeamScores();
+	void BlueTeamScores();
 
 	UPROPERTY()
 	TArray<ABlasterPlayerState*> RedTeam;

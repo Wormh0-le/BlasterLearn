@@ -17,6 +17,11 @@ AProjectileGrenade::AProjectileGrenade()
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->SetIsReplicated(true);
 	ProjectileMovementComponent->bShouldBounce = true;
+
+	// throw grenade
+	Damage = 120.f;
+	HeadShotDamage = 200.f;
+	bFriendlyFire = true;
 }
 
 void AProjectileGrenade::BeginPlay()
