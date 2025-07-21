@@ -876,7 +876,7 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->SpawnActor<AProjectile>(
+			AProjectile* SpawnedProjectile = World->SpawnActor<AProjectile>(
 				GrenadeClass,
 				StartingLocation,
 				ToTarget.Rotation(),

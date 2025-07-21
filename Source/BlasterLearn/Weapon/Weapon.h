@@ -101,6 +101,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	bool bUseScatter = false;
 
+	UPROPERTY(EditAnywhere)
+	bool bFriendlyFire = false;
+
 	FVector TraceEndWithScatter(const FVector& HitTarget);
 protected:
 	// Called when the game starts or when spawned

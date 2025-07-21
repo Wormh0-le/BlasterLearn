@@ -28,6 +28,7 @@ public:
 	
 	float Damage = 20.f;
 	float HeadShotDamage = 40.f;
+	bool bFriendlyFire = false;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

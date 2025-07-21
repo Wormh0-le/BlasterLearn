@@ -328,6 +328,9 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
+
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* CrownSystem;
 

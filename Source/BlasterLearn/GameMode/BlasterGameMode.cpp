@@ -50,6 +50,11 @@ void ABlasterGameMode::Tick(float DeltaTime)
 	}
 }
 
+float ABlasterGameMode::CalculateDamage(AController* AttackerController, AController* VictimController, float BaseDamage, bool bFriendlyFire)
+{
+	return BaseDamage;
+}
+
 void ABlasterGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();

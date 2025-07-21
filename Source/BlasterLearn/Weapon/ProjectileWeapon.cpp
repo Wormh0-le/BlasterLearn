@@ -49,8 +49,6 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 					);
 					SpawnedProjectile->bUseServerSideRewind = false;
 				}
-				SpawnedProjectile->Damage = Damage;
-				SpawnedProjectile->HeadShotDamage = HeadShotDamage;
 			}
 			else // client
 			{
@@ -63,8 +61,6 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 						SpawnParams
 					);
 					SpawnedProjectile->bUseServerSideRewind = false;	// not locally controlled, no SSR
-					SpawnedProjectile->Damage = Damage;
-					SpawnedProjectile->HeadShotDamage = HeadShotDamage;
 					if (InstigatorPawn->IsLocallyControlled())
 					{
 						SpawnedProjectile->bUseServerSideRewind = true;
@@ -72,6 +68,12 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 						SpawnedProjectile->InitialVelocity = SpawnedProjectile->GetActorForwardVector() * SpawnedProjectile->InitialSpeed;
 					}
 				}
+			}
+			if (SpawnedProjectile)
+			{
+				SpawnedProjectile->Damage = Damage;
+				SpawnedProjectile->HeadShotDamage = HeadShotDamage;
+				SpawnedProjectile->bFriendlyFire = bFriendlyFire;
 			}
 		}
 	}
