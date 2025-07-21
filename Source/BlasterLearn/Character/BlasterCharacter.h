@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "BlasterLearn/BlasterTypes/TurningInPlace.h"
 #include "BlasterLearn/BlasterTypes/CombatState.h"
+#include "BlasterLearn/BlasterTypes/Team.h"
 #include "BlasterLearn/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "BlasterCharacter.generated.h"
@@ -78,6 +79,8 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostTheLead();
+
+	void SetTeamColor(ETeam Team);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -288,8 +291,27 @@ private:
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 
 	// Material Instance set on the blueprint, used with the dynamic material instance
-	UPROPERTY(EditAnywhere, Category = Elim)
+	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
+
+	/*
+	 * Teams colors 
+	 */
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* RedMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* BlueMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* OriginalMaterial;
 
 	bool bLeftGame = false;
 

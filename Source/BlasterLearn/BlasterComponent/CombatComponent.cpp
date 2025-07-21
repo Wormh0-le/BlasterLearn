@@ -41,7 +41,6 @@ void UCombatComponent::BeginPlay()
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
 		}
-		InitializeCarriedAmmo();
 	}
 }
 
