@@ -91,6 +91,9 @@ protected:
 	void StopHighPingWarning();
 
 	void ShowReturnToMainMenu();
+
+	FString GetInfoText(const TArray<class ABlasterPlayerState*>& Players);
+	FString GetTeamsInfoText();
 	
 	bool bShowTeamScores = false;
 private:
@@ -104,7 +107,7 @@ private:
 	class ABlasterGameState* BlasterGameState;
 
 	UPROPERTY()
-	class ABlasterPlayerState* BlasterPlayerState;
+	ABlasterPlayerState* BlasterPlayerState;
 
 	float LevelStartingTime = 0.f;
 	float MatchTime = 0.f;
