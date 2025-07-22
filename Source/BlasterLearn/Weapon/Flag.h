@@ -17,11 +17,22 @@ public:
 	AFlag();
 	virtual void Dropped() override;
 
+	void SetTeamColor();
 protected:
+	virtual void BeginPlay() override;
 	virtual void OnEquipped() override;
-	
 	virtual void OnDropped() override;
+	virtual void OnRep_Owner() override;
 private:
+	
+	
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* FlagMesh;
+
+	
+	UPROPERTY(VisibleAnywhere, Category = Team)
+	UMaterialInstanceDynamic* DynamicTeamMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category = Team)
+	UMaterialInstance* TeamMaterialInstance;
 };

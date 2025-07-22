@@ -2,11 +2,15 @@
 
 
 #include "Flag.h"
-
+#include "BlasterLearn/BlasterTypes/Team.h"
+#include "BlasterLearn/Character/BlasterCharacter.h"
 #include "Components/WidgetComponent.h"
+
 
 AFlag::AFlag()
 {
+	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 	FlagMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FlagMesh"));
 	SetRootComponent(FlagMesh);
 	GetAreaSphere()->SetupAttachment(FlagMesh);
@@ -14,6 +18,18 @@ AFlag::AFlag()
 	FlagMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	FlagMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
+
+void AFlag::BeginPlay()
+{
+	Super::BeginPlay();
+	if (TeamMaterialInstance)
+	{
+		DynamicTeamMaterialInstance = UMaterialInstanceDynamic::Create(TeamMaterialInstance, this);
+		FlagMesh->SetMaterial(0, DynamicTeamMaterialInstance);
+		DynamicTeamMaterialInstance->SetVectorParameterValue(TEXT("Color"), FLinearColor::Yellow);
+	}
+}
+
 
 void AFlag::Dropped()
 {
@@ -23,7 +39,38 @@ void AFlag::Dropped()
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
+	SetTeamColor();
 }
+
+void AFlag::SetTeamColor()
+{
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (DynamicTeamMaterialInstance)
+	{
+		if (BlasterOwnerCharacter)
+		{
+			BlasterOwnerCharacter->AttachFlagToLeftHand(this);
+			switch (BlasterOwnerCharacter->GetTeam())
+			{
+			case ETeam::ET_BlueTeam:
+				DynamicTeamMaterialInstance->SetVectorParameterValue(TEXT("Color"), FLinearColor::Blue);
+				break;
+			case ETeam::ET_RedTeam:
+				DynamicTeamMaterialInstance->SetVectorParameterValue(TEXT("Color"), FLinearColor::Red);
+				break;
+			default:
+				DynamicTeamMaterialInstance->SetVectorParameterValue(TEXT("Color"), FLinearColor::Yellow);
+				break;
+			}	
+		}
+		else
+		{
+			DynamicTeamMaterialInstance->SetVectorParameterValue(TEXT("Color"), FLinearColor::Yellow);
+		}
+	}
+}
+
+
 
 void AFlag::OnEquipped()
 {
@@ -52,4 +99,10 @@ void AFlag::OnDropped()
 	FlagMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 	FlagMesh->MarkRenderStateDirty();
 	EnableCustomDepth(true);
+}
+
+void AFlag::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	SetTeamColor();
 }

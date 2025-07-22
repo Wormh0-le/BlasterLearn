@@ -25,7 +25,10 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "BlasterLearn/GameState/BlasterGameState.h"
+#include "BlasterLearn/PlayerStart/TeamPlayerStart.h"
+#include "BlasterLearn/Weapon/Flag.h"
 #include "BlasterLearn/Weapon/Projectile.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 
 // Sets default values
@@ -329,7 +332,42 @@ void ABlasterCharacter::DropOrDestroyWeapons()
 		{
 			DropOrDestroyWeapon(Combat->SecondaryWeapon);	
 		}
+		if (Combat->TheFlag)
+		{
+			Combat->TheFlag->Dropped();
+		}
 	}
+}
+
+void ABlasterCharacter::SetSpawnPoint()
+{
+	if (HasAuthority() && GetTeam() != ETeam::ET_NoTeam)
+	{
+		TArray<AActor*> PlayerSpawnPoints;
+		UGameplayStatics::GetAllActorsOfClass(this, ATeamPlayerStart::StaticClass(), PlayerSpawnPoints);
+		TArray<ATeamPlayerStart*> TeamPlayerStarts;
+		for (auto Start : PlayerSpawnPoints)
+		{
+			ATeamPlayerStart* TeamStart = Cast<ATeamPlayerStart>(Start);
+			if (TeamStart && TeamStart->Team == GetTeam())
+			{
+				TeamPlayerStarts.Add(TeamStart);
+			}
+		}
+		if (TeamPlayerStarts.Num() > 0)
+		{
+			ATeamPlayerStart* ChosenPlayerStart = TeamPlayerStarts[FMath::RandRange(0, TeamPlayerStarts.Num() - 1)];
+			SetActorLocationAndRotation(ChosenPlayerStart->GetActorLocation(), ChosenPlayerStart->GetActorRotation());
+		}
+	}
+}
+
+void ABlasterCharacter::OnPlayerStateInitialized()
+{
+	BlasterPlayerState->AddToScore(0.f);
+	BlasterPlayerState->AddToDefeats(0);
+	SetTeamColor(BlasterPlayerState->GetTeam());
+	SetSpawnPoint();
 }
 
 void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
@@ -341,6 +379,15 @@ void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
 	} else
 	{
 		Weapon->Dropped();
+	}
+}
+
+void ABlasterCharacter::AttachFlagToLeftHand(AFlag* Flag)
+{
+	if (GetMesh() == nullptr || Flag == nullptr) return;
+	const USkeletalMeshSocket* FLagSocket = GetMesh()->GetSocketByName(FName("FlagSocket"));
+	if (FLagSocket) {
+		FLagSocket->AttachActor(Flag, GetMesh());
 	}
 }
 
@@ -417,7 +464,7 @@ void ABlasterCharacter::MultiCastElim_Implementation(bool bPlayerLeftGame)
 void ABlasterCharacter::ElimTimerFinished()
 {
 	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
-	if (BlasterGameMode && !bLeftGame) {
+	if (BlasterGameMode && !bLeftGame && !BlasterGameMode->bTeamsMatch) {
 		BlasterGameMode->RequestRespawn(this, Controller);
 	}
 	if (bLeftGame && IsLocallyControlled())
@@ -902,9 +949,7 @@ void ABlasterCharacter::PollInit()
 		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
 		if (BlasterPlayerState)
 		{
-			BlasterPlayerState->AddToScore(0.f);
-			BlasterPlayerState->AddToDefeats(0);
-			SetTeamColor(BlasterPlayerState->GetTeam());
+			OnPlayerStateInitialized();
 		}
 		ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 		if (BlasterGameState)
@@ -1001,6 +1046,13 @@ bool ABlasterCharacter::IsHoldingTheFlag() const
 {
 	if (Combat == nullptr) return false;
 	return Combat->bHoldingTheFlag;
+}
+
+ETeam ABlasterCharacter::GetTeam()
+{
+	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
+	if (BlasterPlayerState == nullptr) return ETeam::ET_NoTeam;
+	return BlasterPlayerState->GetTeam();
 }
 
 // Called to bind functionality to input

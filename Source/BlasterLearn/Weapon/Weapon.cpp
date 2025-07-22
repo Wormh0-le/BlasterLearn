@@ -80,6 +80,7 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	// so weapon will show widget
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter) {
+		if (BlasterCharacter->IsHoldingTheFlag()) return;
 		BlasterCharacter->SetOverlappingWeapon(this);
 	}
 }
@@ -88,6 +89,7 @@ void AWeapon::OnShpereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter) {
+		if (BlasterCharacter->IsHoldingTheFlag()) return;
 		BlasterCharacter->SetOverlappingWeapon(nullptr);
 	}
 }

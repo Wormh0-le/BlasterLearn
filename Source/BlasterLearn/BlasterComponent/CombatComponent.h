@@ -129,13 +129,14 @@ protected:
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 	void AttachActorToBackpack(AActor* ActorToAttach);
-	void AttachFlagToLeftHand(AWeapon* Flag);
+	
 	void UpdateCarriedAmmo();
 	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
 	void ReloadEmptyWeapon();
 	void ShowAttachedGrenade(bool bShowGrenade);
 	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
 	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+	void HoldFlag(AFlag* FlagToHold);
 private:
 	UPROPERTY()
 	ABlasterCharacter* Character;
@@ -271,6 +272,9 @@ private:
 
 	UPROPERTY(Replicated)
 	bool bHoldingTheFlag = false;
+
+	UPROPERTY()
+	AFlag* TheFlag;
 public:
 	bool CanSwapWeapons();
 };

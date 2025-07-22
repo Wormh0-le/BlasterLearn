@@ -80,6 +80,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostTheLead();
 
+	void AttachFlagToLeftHand(class AFlag* Flag);
 	void SetTeamColor(ETeam Team);
 protected:
 	// Called when the game starts or when spawned
@@ -113,6 +114,9 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void DropOrDestroyWeapons();
+
+	void SetSpawnPoint();
+	void OnPlayerStateInitialized();
 
 	/**
 	 * Hit boxes used for server-side rewind 
@@ -373,4 +377,5 @@ public:
 	bool IsLocallyReloading();
 	FORCEINLINE ULagCompensationComponent* GetLagCompensation() const { return LagCompensation; }
 	FORCEINLINE bool IsHoldingTheFlag() const;
+	ETeam GetTeam();
 };

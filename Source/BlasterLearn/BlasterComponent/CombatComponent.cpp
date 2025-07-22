@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "BlasterLearn/PlayerController/BlasterPlayerController.h"
+#include "BlasterLearn/Weapon/Flag.h"
 #include "Camera/CameraComponent.h"
 #include "BlasterLearn/Weapon/Projectile.h"
 #include "BlasterLearn/Weapon/Shotgun.h"
@@ -416,10 +417,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	if (WeaponToEquip->GetWeaponType() == EWeaponType::EWT_Flag)
 	{
-		bHoldingTheFlag = true;
-		WeaponToEquip->SetWeaponState(EWeaponState::EWS_Equipped);
-		AttachFlagToLeftHand(WeaponToEquip);
-		WeaponToEquip->SetOwner(Character);
+		HoldFlag(Cast<AFlag>(WeaponToEquip));
 	}
 	else
 	{
@@ -497,6 +495,16 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 	PlayEquipWeaponSound(SecondaryWeapon);
 }
 
+void UCombatComponent::HoldFlag(AFlag* FlagToHold)
+{
+	if (FlagToHold == nullptr)	return;
+	bHoldingTheFlag = true;
+	FlagToHold->SetWeaponState(EWeaponState::EWS_Equipped);
+	FlagToHold->SetOwner(Character);
+	FlagToHold->SetTeamColor();
+	TheFlag = FlagToHold;
+}
+
 void UCombatComponent::DropEquippedWeapon()
 {
 	//TODO: drop flag  
@@ -566,15 +574,6 @@ void UCombatComponent::AttachActorToBackpack(AActor* ActorToAttach)
 	if (BackpackSocket)
 	{
 		BackpackSocket->AttachActor(ActorToAttach, Character->GetMesh());
-	}
-}
-
-void UCombatComponent::AttachFlagToLeftHand(AWeapon* Flag)
-{
-	if (Character == nullptr || Character->GetMesh() == nullptr || Flag == nullptr) return;
-	const USkeletalMeshSocket* FLagSocket = Character->GetMesh()->GetSocketByName(FName("FlagSocket"));
-	if (FLagSocket) {
-		FLagSocket->AttachActor(Flag, Character->GetMesh());
 	}
 }
 

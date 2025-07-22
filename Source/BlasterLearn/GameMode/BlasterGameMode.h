@@ -26,7 +26,7 @@ public:
 	
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, class ABlasterPlayerController* AttackerController);
 
-	virtual void RequestRespawn(class ACharacter* ElimmedCharacter, AController* ElimmedController);
+	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 
 	void PlayerLeftGame(class ABlasterPlayerState* LeavingPlayerState);
 

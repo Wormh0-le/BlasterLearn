@@ -137,6 +137,7 @@ protected:
 	UFUNCTION()
 	void OnPingTooHigh(bool bHighPing);
 
+	virtual void OnRep_Owner() override;
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -178,8 +179,6 @@ private:
 	// use client prediction, otherwise ammo value have delay 
 	// UFUNCTION()
 	// void OnRep_Ammo();
-
-	virtual void OnRep_Owner() override;
 	
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
