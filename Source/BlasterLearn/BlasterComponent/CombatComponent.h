@@ -129,6 +129,7 @@ protected:
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 	void AttachActorToBackpack(AActor* ActorToAttach);
+	void AttachFlagToLeftHand(AWeapon* Flag);
 	void UpdateCarriedAmmo();
 	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
 	void ReloadEmptyWeapon();
@@ -140,7 +141,7 @@ private:
 	ABlasterCharacter* Character;
 	
 	UPROPERTY()
-	class ABlasterPlayerController* Controller;
+	ABlasterPlayerController* Controller;
 	
 	UPROPERTY()
 	ABlasterHUD* HUD;
@@ -267,6 +268,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float ThrowStrength = 200.f;
+
+	UPROPERTY(Replicated)
+	bool bHoldingTheFlag = false;
 public:
 	bool CanSwapWeapons();
 };

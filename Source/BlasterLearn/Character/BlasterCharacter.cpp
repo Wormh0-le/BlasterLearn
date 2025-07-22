@@ -311,12 +311,9 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	
 	// why not move to onRep_Health
 	if (Health == 0.f) {
-		
-		if (BlasterGameMode) {
-			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-			ABlasterPlayerController*  AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
-		}
+		BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+		ABlasterPlayerController*  AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+		BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
 	}
 }
 
@@ -526,8 +523,9 @@ void ABlasterCharacter::Destroyed()
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
 {
-	if (bDisableGameplay)
+	if (bDisableGameplay || IsHoldingTheFlag())
 	{
+		if (IsHoldingTheFlag())	Crouch();
 		bUseControllerRotationYaw = false;
 
 		GetCharacterMovement()->bOrientRotationToMovement = true; // It's false when equip weapon,so it need to be true otherwise character will rotate with controller when equip. Or
@@ -564,7 +562,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 void ABlasterCharacter::Jump()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (bIsCrouched) {
 		UnCrouch();
 	} else {
@@ -574,7 +572,7 @@ void ABlasterCharacter::Jump()
 
 void ABlasterCharacter::FireButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		Combat->FireButtonPressed(true);
 	}
@@ -582,7 +580,7 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		Combat->FireButtonPressed(false);
 	}
@@ -622,7 +620,7 @@ void ABlasterCharacter::LookUp(float Value)
 
 void ABlasterCharacter::EquipButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		// if (HasAuthority()) {
 		// 	Combat->EquipWeapon(OverlappingWeapon);
@@ -646,7 +644,7 @@ void ABlasterCharacter::EquipButtonPressed()
 
 void ABlasterCharacter::CrouchButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (bIsCrouched) {
 		UnCrouch();
 	}
@@ -657,7 +655,7 @@ void ABlasterCharacter::CrouchButtonPressed()
 
 void ABlasterCharacter::ReloadButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat)
 	{
 		Combat->Reload();
@@ -666,7 +664,7 @@ void ABlasterCharacter::ReloadButtonPressed()
 
 void ABlasterCharacter::AimButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		Combat->SetAiming(true);
 	}
@@ -674,7 +672,7 @@ void ABlasterCharacter::AimButtonPressed()
 
 void ABlasterCharacter::AimButtonReleased()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		Combat->SetAiming(false);
 	}
@@ -682,7 +680,7 @@ void ABlasterCharacter::AimButtonReleased()
 
 void ABlasterCharacter::ThrowGrenadeButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		Combat->ThrowGrenade();
 	}
@@ -690,7 +688,7 @@ void ABlasterCharacter::ThrowGrenadeButtonPressed()
 
 void ABlasterCharacter::ThrowEquippedWeaponButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		Combat->ThrowEquippedWeapon();
 	}
@@ -997,6 +995,12 @@ bool ABlasterCharacter::IsLocallyReloading()
 {
 	if (Combat == nullptr) return false;
 	return Combat->bLocallyReloading;
+}
+
+bool ABlasterCharacter::IsHoldingTheFlag() const
+{
+	if (Combat == nullptr) return false;
+	return Combat->bHoldingTheFlag;
 }
 
 // Called to bind functionality to input

@@ -413,17 +413,28 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied)	return;
-	if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)
+
+	if (WeaponToEquip->GetWeaponType() == EWeaponType::EWT_Flag)
 	{
-		EquipSecondaryWeapon(WeaponToEquip);
-	} else
-	{
-		EquipPrimaryWeapon(WeaponToEquip);
+		bHoldingTheFlag = true;
+		WeaponToEquip->SetWeaponState(EWeaponState::EWS_Equipped);
+		AttachFlagToLeftHand(WeaponToEquip);
+		WeaponToEquip->SetOwner(Character);
 	}
+	else
+	{
+		if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)
+		{
+			EquipSecondaryWeapon(WeaponToEquip);
+		} else
+		{
+			EquipPrimaryWeapon(WeaponToEquip);
+		}
 	
-	// Offset Yaw for Strafing
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
+		// Offset Yaw for Strafing
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+	}
 }
 
 void UCombatComponent::ResetCombat()
@@ -488,6 +499,7 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::DropEquippedWeapon()
 {
+	//TODO: drop flag  
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->Dropped();
@@ -554,6 +566,15 @@ void UCombatComponent::AttachActorToBackpack(AActor* ActorToAttach)
 	if (BackpackSocket)
 	{
 		BackpackSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+}
+
+void UCombatComponent::AttachFlagToLeftHand(AWeapon* Flag)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || Flag == nullptr) return;
+	const USkeletalMeshSocket* FLagSocket = Character->GetMesh()->GetSocketByName(FName("FlagSocket"));
+	if (FLagSocket) {
+		FLagSocket->AttachActor(Flag, Character->GetMesh());
 	}
 }
 
@@ -935,5 +956,6 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	// DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME(UCombatComponent, Grenades);
+	DOREPLIFETIME(UCombatComponent, bHoldingTheFlag);
 }
 

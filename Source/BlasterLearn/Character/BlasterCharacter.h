@@ -97,8 +97,8 @@ protected:
 	void LookUp(float Value);
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
-	void ReloadButtonPressed();
 	void AimButtonPressed();
+	void ReloadButtonPressed();
 	void AimButtonReleased();
 	void ThrowGrenadeButtonPressed();
 	void ThrowEquippedWeaponButtonPressed();
@@ -372,4 +372,5 @@ public:
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 	bool IsLocallyReloading();
 	FORCEINLINE ULagCompensationComponent* GetLagCompensation() const { return LagCompensation; }
+	FORCEINLINE bool IsHoldingTheFlag() const;
 };

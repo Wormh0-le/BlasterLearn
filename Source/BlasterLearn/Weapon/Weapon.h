@@ -48,7 +48,7 @@ public:
 	void ShowPickUpWidget(bool bShowPickupWidget);
 	virtual void Fire(const FVector& HitTarget);
 	
-	void Dropped();
+	virtual void Dropped();
 	void AddAmmo(int32 AmmoToAdd);
 	// Textures for the weapon crosshairs
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
@@ -191,6 +191,7 @@ public:
 
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickUpWidget; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	bool IsEmpty();
