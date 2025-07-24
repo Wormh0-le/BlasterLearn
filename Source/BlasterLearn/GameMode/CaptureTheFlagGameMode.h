@@ -13,4 +13,7 @@ UCLASS()
 class BLASTERLEARN_API ACaptureTheFlagGameMode : public ATeamsGameMode
 {
 	GENERATED_BODY()
+	
+public:
+	virtual void PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
 };

@@ -23,12 +23,10 @@ protected:
 	virtual void OnEquipped() override;
 	virtual void OnDropped() override;
 	virtual void OnRep_Owner() override;
+
 private:
-	
-	
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* FlagMesh;
-
 	
 	UPROPERTY(VisibleAnywhere, Category = Team)
 	UMaterialInstanceDynamic* DynamicTeamMaterialInstance;

@@ -2,3 +2,10 @@
 
 
 #include "CaptureTheFlagGameMode.h"
+
+void ACaptureTheFlagGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter,
+	ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
+{
+	ABlasterGameMode::PlayerEliminated(ElimmedCharacter, VictimController, AttackerController);
+	
+}
