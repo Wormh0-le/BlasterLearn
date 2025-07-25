@@ -432,6 +432,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		// Offset Yaw for Strafing
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+		Character->SetOverlappingWeapon(nullptr);
 	}
 }
 

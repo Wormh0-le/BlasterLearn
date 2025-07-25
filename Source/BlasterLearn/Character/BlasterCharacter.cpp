@@ -830,15 +830,15 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 }
 
 
-void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
-{
-	if (LastWeapon) {
-		LastWeapon->ShowPickUpWidget(false);
-	}
-	if (OverlappingWeapon) {
-		OverlappingWeapon->ShowPickUpWidget(true);
-	}
-}
+// void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+// {
+// 	if (LastWeapon) {
+// 		LastWeapon->ShowPickUpWidget(false);
+// 	}
+// 	if (OverlappingWeapon) {
+// 		OverlappingWeapon->ShowPickUpWidget(true);
+// 	}
+// }
 
 void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 {
