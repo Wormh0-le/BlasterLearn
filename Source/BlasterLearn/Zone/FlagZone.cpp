@@ -30,8 +30,7 @@ AFlagZone::AFlagZone()
 
 	ZoneSphere = CreateDefaultSubobject<USphereComponent>(TEXT("ZoneSphere"));
 	ZoneSphere->SetupAttachment(RootComponent);
-	ZoneSphere->SetSphereRadius(330.f);
-	ZoneSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	ZoneSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ZoneSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	ZoneSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
@@ -75,6 +74,7 @@ void AFlagZone::PollInit()
 			{
 				if (ZoneStatus == EZoneStatus::EZS_Occupied)
 				{
+					ZoneSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 					if (OwnerTeam == ETeam::ET_BlueTeam)
 					{
 						ZoneStatusWidget->SetRedProgress(1.f);
@@ -99,58 +99,107 @@ void AFlagZone::HandleZoneStatus()
 	switch (ZoneStatus)
 	{
 	case EZoneStatus::EZS_Unoccupied:
-		if (TeamBluePlayerInArea < TeamRedPlayerInArea && TeamBluePlayerInArea == 0) ZoneStatus = EZoneStatus::EZS_RedActivating;
-		if (TeamBluePlayerInArea > TeamRedPlayerInArea && TeamRedPlayerInArea == 0)	ZoneStatus = EZoneStatus::EZS_BlueActivating;
+		if (TeamBluePlayerInArea < TeamRedPlayerInArea && TeamBluePlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_RedActivating;
+		}
+		if (TeamBluePlayerInArea > TeamRedPlayerInArea && TeamRedPlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_BlueActivating;
+		}
 		break;
 	case EZoneStatus::EZS_Occupied:
-		if (TeamBluePlayerInArea < TeamRedPlayerInArea && OwnerTeam == ETeam::ET_BlueTeam && TeamBluePlayerInArea == 0)	ZoneStatus = EZoneStatus::EZS_BlueDeactivating;
-		if (TeamBluePlayerInArea > TeamRedPlayerInArea && OwnerTeam == ETeam::ET_RedTeam && TeamRedPlayerInArea == 0)	ZoneStatus = EZoneStatus::EZS_RedDeactivating;
+		// TODO: broadcast capture Info to zone owner team
+		if (TeamBluePlayerInArea < TeamRedPlayerInArea && OwnerTeam == ETeam::ET_BlueTeam && TeamBluePlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_BlueDeactivating;
+		}
+		if (TeamBluePlayerInArea > TeamRedPlayerInArea && OwnerTeam == ETeam::ET_RedTeam && TeamRedPlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_RedDeactivating;
+		}
 		break;
 	case EZoneStatus::EZS_BlueActivating:
-		if (TeamBluePlayerInArea == 0)	ZoneStatus = EZoneStatus::EZS_BlueDeactivating;
+		if (TeamBluePlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
+			ZoneStatus = EZoneStatus::EZS_BlueDeactivating;
+		}
 		if (TeamRedPlayerInArea != 0 && TeamBluePlayerInArea != 0)
 		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
 			ZoneStatus = EZoneStatus::EZS_BlueBlocked;	
 		}
 		break;
 	case EZoneStatus::EZS_BlueDeactivating:
-		if (TeamBluePlayerInArea != 0)	ZoneStatus = EZoneStatus::EZS_BlueActivating;
+		if (TeamBluePlayerInArea != 0 && TeamRedPlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_BlueActivating;
+		}
 		if (TeamRedPlayerInArea != 0 && TeamBluePlayerInArea != 0)
 		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
 			ZoneStatus = EZoneStatus::EZS_BlueBlocked;	
 		}
 		break;
 	case EZoneStatus::EZS_RedActivating:
-		if (TeamRedPlayerInArea == 0)	ZoneStatus = EZoneStatus::EZS_RedDeactivating;
+		if (TeamRedPlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
+			ZoneStatus = EZoneStatus::EZS_RedDeactivating;
+		}
 		if (TeamRedPlayerInArea != 0 && TeamBluePlayerInArea != 0)
 		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
 			ZoneStatus = EZoneStatus::EZS_RedBlocked;	
 		}
 		break;
 	case EZoneStatus::EZS_RedDeactivating:
-		if (TeamRedPlayerInArea != 0)	ZoneStatus = EZoneStatus::EZS_RedActivating;
+		if (TeamRedPlayerInArea != 0 && TeamBluePlayerInArea == 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_RedActivating;
+		}
 		if (TeamRedPlayerInArea != 0 && TeamBluePlayerInArea != 0)
 		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
 			ZoneStatus = EZoneStatus::EZS_RedBlocked;	
 		}
 		break;
 	case EZoneStatus::EZS_BlueBlocked:
-		if (TeamRedPlayerInArea == 0 && TeamBluePlayerInArea > 0) ZoneStatus = EZoneStatus::EZS_BlueActivating;
-		if (TeamBluePlayerInArea == 0 && TeamRedPlayerInArea > 0)	ZoneStatus = EZoneStatus::EZS_BlueDeactivating;
+		if (TeamRedPlayerInArea == 0 && TeamBluePlayerInArea > 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_BlueActivating;
+		}
+		if (TeamBluePlayerInArea == 0 && TeamRedPlayerInArea > 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_BlueDeactivating;
+		}
 		break;
 	case EZoneStatus::EZS_RedBlocked:
-		if (TeamBluePlayerInArea == 0 && TeamRedPlayerInArea > 0)	ZoneStatus = EZoneStatus::EZS_RedActivating;
-		if (TeamRedPlayerInArea == 0 && TeamBluePlayerInArea > 0) ZoneStatus = EZoneStatus::EZS_RedDeactivating;
+		if (TeamBluePlayerInArea == 0 && TeamRedPlayerInArea > 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_RedActivating;
+		}
+		if (TeamRedPlayerInArea == 0 && TeamBluePlayerInArea > 0)
+		{
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
+			ZoneStatus = EZoneStatus::EZS_RedDeactivating;
+		}
 		break;
 	}
 }
 
 void AFlagZone::UpdateZoneStatusBar(float DeltaTime)
 {
-	// TODO:
-	// 1. broadcast capture Info
-	// 2. update zone color and status text based on status
-	// 3. teleport
 	if (ZoneStatusWidget == nullptr)	return;
 	float CurRedProgress = ZoneStatusWidget->GetRedProgress();
 	float CurBlueProgress = ZoneStatusWidget->GetBlueProgress();
@@ -162,20 +211,26 @@ void AFlagZone::UpdateZoneStatusBar(float DeltaTime)
 		ZoneStatusWidget->SetRedProgress(CurRedProgress);
 		if (CurRedProgress >= 1.f)
 		{
+			// TODO: Broadcast capture info to all team, update game state()
 			CurrentCaptureTime = 0.f;
 			ZoneStatus = EZoneStatus::EZS_Occupied;
 			OwnerTeam = ETeam::ET_BlueTeam;
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
+			ZoneStatusEffectComponent->SetColorParameter(FName("Color"), FLinearColor::Blue);
+			ZoneSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 		break;
 	case EZoneStatus::EZS_BlueDeactivating:
 		CurrentCaptureTime += DeltaTime;
 		CurRedProgress = FMath::Clamp(CurRedProgress - CurrentCaptureTime / CaptureTimeCost, 0.f, 1.f);
 		ZoneStatusWidget->SetRedProgress(CurRedProgress);
+		ZoneSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		if (CurRedProgress == 0.f)
 		{
 			CurrentCaptureTime = 0.f;
 			ZoneStatus = EZoneStatus::EZS_Unoccupied;
 			OwnerTeam = ETeam::ET_NoTeam;
+			ZoneStatusEffectComponent->SetColorParameter(FName("Color"), InitialColor);
 		}
 		break;
 	case EZoneStatus::EZS_RedActivating:
@@ -187,17 +242,22 @@ void AFlagZone::UpdateZoneStatusBar(float DeltaTime)
 			CurrentCaptureTime = 0.f;
 			ZoneStatus = EZoneStatus::EZS_Occupied;
 			OwnerTeam = ETeam::ET_RedTeam;
+			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
+			ZoneStatusEffectComponent->SetColorParameter(FName("Color"), FLinearColor::Red);
+			ZoneSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 		break;
 	case EZoneStatus::EZS_RedDeactivating:
 		CurrentCaptureTime += DeltaTime;
 		CurBlueProgress = FMath::Clamp(CurBlueProgress - CurrentCaptureTime / CaptureTimeCost, 0.f, 1.f);
 		ZoneStatusWidget->SetBlueProgress(CurBlueProgress);
+		ZoneSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		if (CurBlueProgress == 0.f)
 		{
 			CurrentCaptureTime = 0.f;
 			ZoneStatus = EZoneStatus::EZS_Unoccupied;
 			OwnerTeam = ETeam::ET_NoTeam;
+			ZoneStatusEffectComponent->SetColorParameter(FName("Color"), InitialColor);
 		}
 		break;
 	case EZoneStatus::EZS_Occupied:
@@ -246,10 +306,21 @@ void AFlagZone::OnAreaBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AA
 void AFlagZone::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// TODO: teleport(need cooldown), teleport to?
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter && BlasterCharacter->GetTeam() == OwnerTeam && ZoneStatus == EZoneStatus::EZS_Occupied)
+	{
+		ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("E - Teleport")));
+	}
 }
 
 
 void AFlagZone::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter && BlasterCharacter->GetTeam() == OwnerTeam && ZoneStatus == EZoneStatus::EZS_Occupied)
+	{
+		ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
+	}
 }

@@ -31,4 +31,6 @@ public:
 	float GetBlueProgress();
 
 	float GetRedProgress();
+
+	void SetStatusInfo(const FText& InfoText);
 };

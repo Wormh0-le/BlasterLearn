@@ -3,6 +3,7 @@
 
 #include "DualBarStatusWidget.h"
 #include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 
 
 void UDualBarStatusWidget::SetRedProgress(float percent)
@@ -37,4 +38,12 @@ float UDualBarStatusWidget::GetRedProgress()
 		return RedProgressBar->GetPercent(); 
 	}
 	return 0;
+}
+
+void UDualBarStatusWidget::SetStatusInfo(const FText& InfoText)
+{
+	if (StatusText)
+	{
+		StatusText->SetText(InfoText);
+	}
 }
