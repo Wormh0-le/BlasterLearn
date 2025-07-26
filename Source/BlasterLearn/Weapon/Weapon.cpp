@@ -257,10 +257,7 @@ void AWeapon::OnEquippedSecondary()
 
 void AWeapon::OnDropped()
 {
-	if (HasAuthority())
-	{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);	
-	}
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);	
 	WeaponMesh->SetSimulatePhysics(true);
 	WeaponMesh->SetEnableGravity(true);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);

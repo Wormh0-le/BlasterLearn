@@ -16,17 +16,19 @@ class BLASTERLEARN_API UDualBarStatusWidget : public UUserWidget
 
 public:
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* TeleportText;
+	class UTextBlock* StatusText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UProgressBar* BlueProgress;
+	class UProgressBar* BlueProgressBar;
 
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* RedProgress;
+	UProgressBar* RedProgressBar;
 
-	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	UWidgetAnimation* BlueActivating;
+	void SetRedProgress(float percent);
 
-	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	UWidgetAnimation* RedActivating;
+	void SetBlueProgress(float percent);
+
+	float GetBlueProgress();
+
+	float GetRedProgress();
 };

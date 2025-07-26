@@ -86,10 +86,7 @@ void AFlag::OnEquipped()
 
 void AFlag::OnDropped()
 {
-	if (HasAuthority())
-	{
-		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);	
-	}
+	GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);	
 	FlagMesh->SetSimulatePhysics(true);
 	FlagMesh->SetEnableGravity(true);
 	FlagMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
