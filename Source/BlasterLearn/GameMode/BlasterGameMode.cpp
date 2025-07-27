@@ -8,6 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFrameWork/PlayerStart.h"
 #include "BlasterLearn/GameState/BlasterGameState.h"
+#include "BlasterLearn/PlayerStart/TeamPlayerStart.h"
+#include "BlasterLearn/Zone/FlagZone.h"
 
 
 namespace MatchState {
@@ -34,6 +36,7 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		if (CountdownTime <= 0.f)
 		{
 			StartMatch();
+			MapInitialized();
 		}
 	} else if (MatchState == MatchState::InProgress) {
 		CountdownTime = WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
@@ -46,6 +49,45 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		if (CountdownTime <= 0.f)
 		{
 			RestartGame();
+		}
+	}
+}
+
+void ABlasterGameMode::MapInitialized()
+{
+	BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
+	if (BlasterGameState)
+	{
+		TArray<AActor*> PlayerStarts;
+		UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), PlayerStarts);
+		BlasterGameState->PlayerStarts = PlayerStarts;
+		if (bTeamsMatch)
+		{
+			for (auto Start : PlayerStarts)
+			{
+				ATeamPlayerStart* TeamStart = Cast<ATeamPlayerStart>(Start);
+				if (TeamStart && TeamStart->Team == ETeam::ET_BlueTeam)
+				{
+					BlasterGameState->TeamBluePlayerStarts.AddUnique(TeamStart);
+				}
+				if (TeamStart && TeamStart->Team == ETeam::ET_RedTeam)
+				{
+					BlasterGameState->TeamRedPlayerStarts.AddUnique(TeamStart);
+				}
+			}
+		}
+		if (bCaptureMatch)
+		{
+			TArray<AActor*> FlagZones;
+			UGameplayStatics::GetAllActorsOfClass(this, AFlagZone::StaticClass(), FlagZones);
+			for (auto Zone : FlagZones)
+			{
+				AFlagZone* FlagZonePtr = Cast<AFlagZone>(Zone);
+				if (FlagZonePtr && !FlagZonePtr->bBaseZone)
+				{
+					BlasterGameState->AllTeleports.AddUnique(FlagZonePtr);
+				}
+			}
 		}
 	}
 }
@@ -76,7 +118,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
 	
-	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+	BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState)
 	{
 		AttackerPlayerState->AddToScore(1.f);
@@ -128,18 +170,35 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 		ElimmedCharacter->Reset();
 		ElimmedCharacter->Destroy();
 	}
-	if (ElimmedController) {
-		TArray<AActor*> PlayerStarts;
-		UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), PlayerStarts);
-		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
-		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]);
+	BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
+	if (ElimmedController && BlasterGameState) {
+		int32 Selection;
+		if (bTeamsMatch)
+		{
+			ETeam ElimmedTeam = ElimmedController->GetPlayerState<ABlasterPlayerState>()->GetTeam();
+			if (ElimmedTeam == ETeam::ET_BlueTeam)
+			{
+				Selection = FMath::RandRange(0, BlasterGameState->TeamBluePlayerStarts.Num() - 1);
+				RestartPlayerAtPlayerStart(ElimmedController, BlasterGameState->TeamBluePlayerStarts[Selection]);	
+			}
+			if (ElimmedTeam == ETeam::ET_RedTeam)
+			{
+				Selection = FMath::RandRange(0, BlasterGameState->TeamRedPlayerStarts.Num() - 1);
+				RestartPlayerAtPlayerStart(ElimmedController, BlasterGameState->TeamRedPlayerStarts[Selection]);
+			}
+		}
+		else
+		{
+			Selection = FMath::RandRange(0, BlasterGameState->TeamBluePlayerStarts.Num() - 1);
+			RestartPlayerAtPlayerStart(ElimmedController, BlasterGameState->PlayerStarts[Selection]);	
+		}
 	}
 }
 
 void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* LeavingPlayerState)
 {
 	if (LeavingPlayerState == nullptr) return;
-	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+	BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
 	if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(LeavingPlayerState))
 	{
 		BlasterGameState->TopScoringPlayers.Remove(LeavingPlayerState);

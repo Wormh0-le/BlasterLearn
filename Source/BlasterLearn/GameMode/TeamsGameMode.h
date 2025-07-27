@@ -22,7 +22,8 @@ public:
 	virtual void PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
 protected:
 	virtual void HandleMatchHasStarted() override;
+
 private:
-	UPROPERTY()
-	class ABlasterGameState* BlasterGameState;
+	UPROPERTY(EditDefaultsOnly)
+	int32 WinningScores;
 };

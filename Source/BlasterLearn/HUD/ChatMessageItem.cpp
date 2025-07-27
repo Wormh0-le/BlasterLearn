@@ -4,7 +4,7 @@
 #include "ChatMessageItem.h"
 #include "Components/TextBlock.h"
 
-void UChatMessageItem::Setup(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo)
+void UChatMessageItem::Setup(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo, const FLinearColor& RoleColor)
 {
 	if (TimeText)
 	{
@@ -13,6 +13,7 @@ void UChatMessageItem::Setup(const FString& MessageTime, const FString& MessageR
 	if (RoleText)
 	{
 		RoleText->SetText(FText::FromString(MessageRole + ":"));
+		RoleText->SetColorAndOpacity(RoleColor);
 	}
 	if (MessageText)
 	{

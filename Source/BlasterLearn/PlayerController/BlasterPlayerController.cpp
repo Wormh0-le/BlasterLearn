@@ -573,7 +573,7 @@ void ABlasterPlayerController::SetHUDBlueTeamScore(int32 BlueScore)
 	}
 }
 
-void ABlasterPlayerController::ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo)
+void ABlasterPlayerController::ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo, const FLinearColor& RoleColor)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	bool bHUDValid = BlasterHUD &&
@@ -581,7 +581,7 @@ void ABlasterPlayerController::ShowMessage(const FString& MessageTime, const FSt
 		BlasterHUD->CharacterOverlay->ChatBoard;
 	if (bHUDValid)
 	{
-		BlasterHUD->CharacterOverlay->ChatBoard->AddMessage(MessageTime, MessageRole, MessageInfo);
+		BlasterHUD->CharacterOverlay->ChatBoard->AddMessage(MessageTime, MessageRole, MessageInfo, RoleColor);
 	}
 }
 
@@ -616,7 +616,7 @@ void ABlasterPlayerController::ServerSendMessage_Implementation(const FString& M
 	BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
 	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
 	if (BlasterGameState && BlasterPlayerState) {
-		BlasterGameState->MulticastBroadcastMessage(BlasterPlayerState->GetPlayerName(), MessageInfo);
+		BlasterGameState->MulticastBroadcastMessage(BlasterPlayerState->GetPlayerName(), MessageInfo, BlasterPlayerState->GetTeam());
 	}
 }
 

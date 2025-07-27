@@ -21,6 +21,8 @@ class BLASTERLEARN_API ABlasterGameMode : public AGameMode
 public:
 	ABlasterGameMode();
 	virtual void Tick(float DeltaTime) override;
+
+	void MapInitialized();
 	
 	virtual float CalculateDamage(AController* AttackerController, AController* VictimController, float BaseDamage, bool bFriendlyFire);
 	
@@ -42,6 +44,11 @@ public:
 	float LevelStartingTime = 0.f;
 
 	bool bTeamsMatch = false;
+
+	bool bCaptureMatch = false;
+
+	UPROPERTY()
+	class ABlasterGameState* BlasterGameState;
 protected:
 	virtual  void BeginPlay() override;
 	virtual void OnMatchStateSet() override;

@@ -115,14 +115,14 @@ protected:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void DropOrDestroyWeapons();
 
-	void SetSpawnPoint();
+	// void SetSpawnPoint();
 	void OnPlayerStateInitialized();
 
 	/**
 	 * Hit boxes used for server-side rewind 
 	 */
 	UPROPERTY(EditAnywhere)
-	class UBoxComponent* head;
+	UBoxComponent* head;
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* pelvis;

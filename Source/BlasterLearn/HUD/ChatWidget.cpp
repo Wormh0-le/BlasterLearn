@@ -9,14 +9,14 @@
 #include "Components/ScrollBox.h"
 
 
-void UChatWidget::AddMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo)
+void UChatWidget::AddMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo, const FLinearColor& RoleColor)
 {
 	if (SB_ChatHistory == nullptr || MessageItemWidgetClass == nullptr) return;
 
 	UChatMessageItem* MsgItemWidget = CreateWidget<UChatMessageItem>(this, MessageItemWidgetClass);
 	if (MsgItemWidget)
 	{
-		MsgItemWidget->Setup(MessageTime, MessageRole, MessageInfo);
+		MsgItemWidget->Setup(MessageTime, MessageRole, MessageInfo, RoleColor);
 		SB_ChatHistory->AddChild(MsgItemWidget);
 		SB_ChatHistory->ScrollToEnd();
 	}
@@ -47,6 +47,7 @@ void UChatWidget::OnTextCommitted(const FText& Text, ETextCommit::Type CommitMet
 		FString Message = Text.ToString();
 		if (!Message.IsEmpty())
 		{
+			// TODO: public chat
 			if (ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(GetOwningPlayer()))
 			{
 				BlasterPlayerController->ServerSendMessage(Message);

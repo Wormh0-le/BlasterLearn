@@ -31,7 +31,7 @@ public:
 	void SetHUDRedTeamScore(int32 RedScore);
 	void SetHUDBlueTeamScore(int32 BlueScore);
 
-	void ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
+	void ShowMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo, const FLinearColor& RoleColor);
 
 	void BroadcastKillEventMessage(const FKillEventMessage& KillEventMessage);
 

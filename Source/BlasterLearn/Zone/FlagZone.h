@@ -41,12 +41,18 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	FString ZoneName;
-	
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bBaseZone;
+
+	UPROPERTY(Replicated)
+	bool bTeleportCooldown = false;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void PollInit();
+	
 	UFUNCTION()
 	virtual void OnAreaBoxOverlap(
 		UPrimitiveComponent* OverlappedComponent,
@@ -108,6 +114,9 @@ private:
 	UPROPERTY()
 	class UDualBarStatusWidget* ZoneStatusWidget;
 
+	UPROPERTY()
+	class ACaptureTheFlagGameMode* CaptureGameMode;
+
 	UPROPERTY(EditDefaultsOnly)
 	FLinearColor InitialColor;
 
@@ -121,4 +130,7 @@ private:
 	void HandleZoneStatus();
 
 	void UpdateZoneStatusBar(float DeltaTime);
+
+public:
+	FORCEINLINE ETeam GetOwnerTeam() { return OwnerTeam; }
 };

@@ -4,10 +4,13 @@
 #include "FlagZone.h"
 
 #include "BlasterLearn/Character/BlasterCharacter.h"
+#include "BlasterLearn/GameMode/CaptureTheFlagGameMode.h"
+#include "BlasterLearn/GameState/BlasterGameState.h"
 #include "BlasterLearn/HUD/DualBarStatusWidget.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
 
@@ -111,16 +114,27 @@ void AFlagZone::HandleZoneStatus()
 		}
 		break;
 	case EZoneStatus::EZS_Occupied:
-		// TODO: broadcast capture Info to zone owner team
 		if (TeamBluePlayerInArea < TeamRedPlayerInArea && OwnerTeam == ETeam::ET_BlueTeam && TeamBluePlayerInArea == 0)
 		{
 			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
 			ZoneStatus = EZoneStatus::EZS_BlueDeactivating;
+			CaptureGameMode = CaptureGameMode == nullptr ? GetWorld()->GetAuthGameMode<ACaptureTheFlagGameMode>() : CaptureGameMode;
+			if (CaptureGameMode && CaptureGameMode->BlasterGameState)
+			{
+				FString OccupiedMessage = FString::Printf(TEXT("TeamRed is taking over TeamBlue's point %s"), *ZoneName);
+				CaptureGameMode->BlasterGameState->MulticastBroadcastMessage("System", OccupiedMessage);
+			}
 		}
 		if (TeamBluePlayerInArea > TeamRedPlayerInArea && OwnerTeam == ETeam::ET_RedTeam && TeamRedPlayerInArea == 0)
 		{
 			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Capturing")));
 			ZoneStatus = EZoneStatus::EZS_RedDeactivating;
+			CaptureGameMode = CaptureGameMode == nullptr ? GetWorld()->GetAuthGameMode<ACaptureTheFlagGameMode>() : CaptureGameMode;
+			if (CaptureGameMode && CaptureGameMode->BlasterGameState)
+			{
+				FString OccupiedMessage = FString::Printf(TEXT("TeamBlue is taking over TeamRed's point %s"), *ZoneName);
+				CaptureGameMode->BlasterGameState->MulticastBroadcastMessage("System", OccupiedMessage);
+			}
 		}
 		break;
 	case EZoneStatus::EZS_BlueActivating:
@@ -211,13 +225,19 @@ void AFlagZone::UpdateZoneStatusBar(float DeltaTime)
 		ZoneStatusWidget->SetRedProgress(CurRedProgress);
 		if (CurRedProgress >= 1.f)
 		{
-			// TODO: Broadcast capture info to all team, update game state()
 			CurrentCaptureTime = 0.f;
 			ZoneStatus = EZoneStatus::EZS_Occupied;
 			OwnerTeam = ETeam::ET_BlueTeam;
 			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
 			ZoneStatusEffectComponent->SetColorParameter(FName("Color"), FLinearColor::Blue);
 			ZoneSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			CaptureGameMode = CaptureGameMode == nullptr ? GetWorld()->GetAuthGameMode<ACaptureTheFlagGameMode>() : CaptureGameMode;
+			if (CaptureGameMode && CaptureGameMode->BlasterGameState)
+			{	
+				FString OccupiedMessage = FString::Printf(TEXT("TeamBlue has taken over point %s"), *ZoneName);
+				CaptureGameMode->BlasterGameState->MulticastBroadcastMessage("System", OccupiedMessage);
+				CaptureGameMode->ZoneCaptured(this);
+			}
 		}
 		break;
 	case EZoneStatus::EZS_BlueDeactivating:
@@ -245,6 +265,13 @@ void AFlagZone::UpdateZoneStatusBar(float DeltaTime)
 			ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
 			ZoneStatusEffectComponent->SetColorParameter(FName("Color"), FLinearColor::Red);
 			ZoneSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			CaptureGameMode = CaptureGameMode == nullptr ? GetWorld()->GetAuthGameMode<ACaptureTheFlagGameMode>() : CaptureGameMode;
+			if (CaptureGameMode && CaptureGameMode->BlasterGameState)
+			{
+				FString OccupiedMessage = FString::Printf(TEXT("TeamRed has taken over point %s"), *ZoneName);
+				CaptureGameMode->BlasterGameState->MulticastBroadcastMessage("System", OccupiedMessage);
+				CaptureGameMode->ZoneCaptured(this);
+			}
 		}
 		break;
 	case EZoneStatus::EZS_RedDeactivating:
@@ -270,7 +297,7 @@ void AFlagZone::UpdateZoneStatusBar(float DeltaTime)
 }
 
 void AFlagZone::OnAreaBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter && BlasterCharacter->IsHoldingTheFlag())
@@ -306,7 +333,7 @@ void AFlagZone::OnAreaBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AA
 void AFlagZone::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// TODO: teleport(need cooldown), teleport to?
+	// TODO: random teleport(need cooldown)
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter && BlasterCharacter->GetTeam() == OwnerTeam && ZoneStatus == EZoneStatus::EZS_Occupied)
 	{

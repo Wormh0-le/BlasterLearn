@@ -15,7 +15,7 @@ class BLASTERLEARN_API UChatMessageItem : public UUserWidget
 	GENERATED_BODY()
 public:
 	UFUNCTION()
-	void Setup(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
+	void Setup(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo, const FLinearColor& RoleColor);
 private:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* TimeText;

@@ -15,7 +15,7 @@ class BLASTERLEARN_API UChatWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void AddMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo);
+	void AddMessage(const FString& MessageTime, const FString& MessageRole, const FString& MessageInfo, const FLinearColor& RoleColor);
 
 	void EnableChatInput();
 

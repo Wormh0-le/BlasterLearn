@@ -14,6 +14,7 @@ void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ABlasterGameState, TopScoringPlayers);
 	DOREPLIFETIME(ABlasterGameState, BlueTeamScore);
 	DOREPLIFETIME(ABlasterGameState, RedTeamScore);
+	DOREPLIFETIME(ABlasterGameState, AllTeleports);
 }
 
 void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
@@ -91,17 +92,34 @@ void ABlasterGameState::MulticastBroadcastKillEvent_Implementation(const FKillEv
 	}
 }
 
-void ABlasterGameState::MulticastBroadcastMessage_Implementation(const FString& MessageRole, const FString& MessageInfo)
+void ABlasterGameState::MulticastBroadcastMessage_Implementation(const FString& MessageRole, const FString& MessageInfo, ETeam MessageTeam, bool bPublic)
 {
 	for (APlayerState* PlayerState : PlayerArray)
 	{
+		ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(PlayerState);
+		FLinearColor RoleColor = FLinearColor::Green;
+		if (MessageTeam != ETeam::ET_NoTeam)
+		{
+			if (!bPublic && BlasterPlayerState->GetTeam() != MessageTeam)	continue;
+			if (bPublic)
+			{
+				if (MessageTeam == ETeam::ET_BlueTeam)
+				{
+					RoleColor = FLinearColor::Blue;
+				}
+				if (MessageTeam == ETeam::ET_RedTeam)
+				{
+					RoleColor = FLinearColor::Red;
+				}
+			}
+		}
 		if (ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerState->GetPlayerController()))
 		{
 			if (BlasterPlayerController->IsLocalPlayerController())
 			{
 				FDateTime CurrentTime = FDateTime::Now();
 				FString TimeString = CurrentTime.ToString(TEXT("[%y-%m-%d %H:%M:%S]"));
-				BlasterPlayerController->ShowMessage(TimeString, MessageRole, MessageInfo);
+				BlasterPlayerController->ShowMessage(TimeString, MessageRole, MessageInfo, RoleColor);
 			}
 		}
 	}

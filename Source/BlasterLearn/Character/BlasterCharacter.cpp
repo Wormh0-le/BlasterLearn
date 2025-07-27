@@ -339,35 +339,34 @@ void ABlasterCharacter::DropOrDestroyWeapons()
 	}
 }
 
-void ABlasterCharacter::SetSpawnPoint()
-{
-	if (HasAuthority() && GetTeam() != ETeam::ET_NoTeam)
-	{
-		TArray<AActor*> PlayerSpawnPoints;
-		UGameplayStatics::GetAllActorsOfClass(this, ATeamPlayerStart::StaticClass(), PlayerSpawnPoints);
-		TArray<ATeamPlayerStart*> TeamPlayerStarts;
-		for (auto Start : PlayerSpawnPoints)
-		{
-			ATeamPlayerStart* TeamStart = Cast<ATeamPlayerStart>(Start);
-			if (TeamStart && TeamStart->Team == GetTeam())
-			{
-				TeamPlayerStarts.Add(TeamStart);
-			}
-		}
-		if (TeamPlayerStarts.Num() > 0)
-		{
-			ATeamPlayerStart* ChosenPlayerStart = TeamPlayerStarts[FMath::RandRange(0, TeamPlayerStarts.Num() - 1)];
-			SetActorLocationAndRotation(ChosenPlayerStart->GetActorLocation(), ChosenPlayerStart->GetActorRotation());
-		}
-	}
-}
+// void ABlasterCharacter::SetSpawnPoint()
+// {
+// 	if (HasAuthority() && GetTeam() != ETeam::ET_NoTeam)
+// 	{
+// 		TArray<AActor*> PlayerSpawnPoints;
+// 		UGameplayStatics::GetAllActorsOfClass(this, ATeamPlayerStart::StaticClass(), PlayerSpawnPoints);
+// 		TArray<ATeamPlayerStart*> TeamPlayerStarts;
+// 		for (auto Start : PlayerSpawnPoints)
+// 		{
+// 			ATeamPlayerStart* TeamStart = Cast<ATeamPlayerStart>(Start);
+// 			if (TeamStart && TeamStart->Team == GetTeam())
+// 			{
+// 				TeamPlayerStarts.Add(TeamStart);
+// 			}
+// 		}
+// 		if (TeamPlayerStarts.Num() > 0)
+// 		{
+// 			ATeamPlayerStart* ChosenPlayerStart = TeamPlayerStarts[FMath::RandRange(0, TeamPlayerStarts.Num() - 1)];
+// 			SetActorLocationAndRotation(ChosenPlayerStart->GetActorLocation(), ChosenPlayerStart->GetActorRotation());
+// 		}
+// 	}
+// }
 
 void ABlasterCharacter::OnPlayerStateInitialized()
 {
 	BlasterPlayerState->AddToScore(0.f);
 	BlasterPlayerState->AddToDefeats(0);
 	SetTeamColor(BlasterPlayerState->GetTeam());
-	SetSpawnPoint();
 }
 
 void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
@@ -464,7 +463,7 @@ void ABlasterCharacter::MultiCastElim_Implementation(bool bPlayerLeftGame)
 void ABlasterCharacter::ElimTimerFinished()
 {
 	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
-	if (BlasterGameMode && !bLeftGame && !BlasterGameMode->bTeamsMatch) {
+	if (BlasterGameMode && !bLeftGame) {
 		BlasterGameMode->RequestRespawn(this, Controller);
 	}
 	if (bLeftGame && IsLocallyControlled())

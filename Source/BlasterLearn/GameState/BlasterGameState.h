@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
 #include "BlasterLearn/BlasterTypes/KillEventInfo.h"
+#include "BlasterLearn/BlasterTypes/Team.h"
 #include "BlasterGameState.generated.h"
 
 
@@ -23,9 +24,22 @@ public:
 
 	void UpdateTopScore(ABlasterPlayerState* ScoringPlayer);
 
+	UPROPERTY(Replicated)
+	TArray<class AFlagZone*> AllTeleports;
+
+	// TODO: set by datable, only need location and rotation
+	UPROPERTY(Replicated)
+	TArray<AActor*> PlayerStarts;
+
+	UPROPERTY(Replicated)
+	TArray<class ATeamPlayerStart*> TeamBluePlayerStarts;
+
+	UPROPERTY(Replicated)
+	TArray<ATeamPlayerStart*> TeamRedPlayerStarts;
+
 	// Broadcasts a message to all players in the game
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastBroadcastMessage(const FString& MessageRole, const FString& MessageInfo);
+	void MulticastBroadcastMessage(const FString& MessageRole, const FString& MessageInfo, ETeam MessageTeam = ETeam::ET_NoTeam, bool bPublic = false);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastBroadcastKillEvent(const FKillEventMessage& KillEventMessage);

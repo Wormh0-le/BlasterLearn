@@ -76,7 +76,7 @@ void ATeamsGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter,
 	ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
 	Super::PlayerEliminated(ElimmedCharacter, VictimController, AttackerController);
-	BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
+	BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(GameState) : BlasterGameState;
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	if (BlasterGameState && AttackerPlayerState)
 	{
@@ -87,6 +87,10 @@ void ATeamsGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter,
 		if (AttackerPlayerState->GetTeam() == ETeam::ET_RedTeam)
 		{
 			BlasterGameState->RedTeamScores();
+		}
+		if (BlasterGameState->BlueTeamScore > WinningScores || BlasterGameState->RedTeamScore > WinningScores)
+		{
+			SetMatchState(MatchState::Cooldown);
 		}
 	}
 }
