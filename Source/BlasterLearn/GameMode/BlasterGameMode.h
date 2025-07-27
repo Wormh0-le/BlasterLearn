@@ -21,6 +21,7 @@ class BLASTERLEARN_API ABlasterGameMode : public AGameMode
 public:
 	ABlasterGameMode();
 	virtual void Tick(float DeltaTime) override;
+	virtual void InitGameState() override;
 
 	void MapInitialized();
 	

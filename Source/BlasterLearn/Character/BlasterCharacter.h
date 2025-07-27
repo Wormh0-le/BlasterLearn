@@ -115,7 +115,7 @@ protected:
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void DropOrDestroyWeapons();
 
-	// void SetSpawnPoint();
+	void SetSpawnPoint();
 	void OnPlayerStateInitialized();
 
 	/**
@@ -334,6 +334,9 @@ private:
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;
+	
+	UPROPERTY()
+	class ABlasterGameState* BlasterGameState;
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* CrownSystem;

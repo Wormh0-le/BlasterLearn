@@ -36,7 +36,6 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		if (CountdownTime <= 0.f)
 		{
 			StartMatch();
-			MapInitialized();
 		}
 	} else if (MatchState == MatchState::InProgress) {
 		CountdownTime = WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
@@ -51,6 +50,12 @@ void ABlasterGameMode::Tick(float DeltaTime)
 			RestartGame();
 		}
 	}
+}
+
+void ABlasterGameMode::InitGameState()
+{
+	Super::InitGameState();
+	MapInitialized();
 }
 
 void ABlasterGameMode::MapInitialized()
@@ -189,7 +194,7 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 		}
 		else
 		{
-			Selection = FMath::RandRange(0, BlasterGameState->TeamBluePlayerStarts.Num() - 1);
+			Selection = FMath::RandRange(0, BlasterGameState->PlayerStarts.Num() - 1);
 			RestartPlayerAtPlayerStart(ElimmedController, BlasterGameState->PlayerStarts[Selection]);	
 		}
 	}
