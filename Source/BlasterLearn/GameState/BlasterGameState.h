@@ -28,13 +28,13 @@ public:
 	TArray<class AFlagZone*> AllTeleports;
 
 	// TODO: set by datable, only need location and rotation
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	TArray<AActor*> PlayerStarts;
 
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	TArray<class ATeamPlayerStart*> TeamBluePlayerStarts;
 
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	TArray<ATeamPlayerStart*> TeamRedPlayerStarts;
 
 	// Broadcasts a message to all players in the game

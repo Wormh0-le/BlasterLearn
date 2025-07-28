@@ -569,9 +569,8 @@ void ABlasterCharacter::Destroyed()
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
 {
-	if (bDisableGameplay || IsHoldingTheFlag())
+	if (bDisableGameplay)
 	{
-		if (IsHoldingTheFlag())	Crouch();
 		bUseControllerRotationYaw = false;
 
 		GetCharacterMovement()->bOrientRotationToMovement = true; // It's false when equip weapon,so it need to be true otherwise character will rotate with controller when equip. Or
@@ -734,7 +733,7 @@ void ABlasterCharacter::ThrowGrenadeButtonPressed()
 
 void ABlasterCharacter::ThrowEquippedWeaponButtonPressed()
 {
-	if (bDisableGameplay || IsHoldingTheFlag()) return;
+	if (bDisableGameplay) return;
 	if (Combat) {
 		Combat->ThrowEquippedWeapon();
 	}

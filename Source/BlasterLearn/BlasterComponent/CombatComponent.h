@@ -121,7 +121,10 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerDropEquippedWeapon(const FVector_NetQuantize& Target);
 
-	void OnThrowEquippedWeapon();
+	void DropFlag();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerDropFlag(const FVector_NetQuantize& Target);
 
 	UFUNCTION(Server, Reliable)
 	void ServerOnThrowEquippedWeapon();
@@ -273,7 +276,7 @@ private:
 	UPROPERTY(Replicated)
 	bool bHoldingTheFlag = false;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	AFlag* TheFlag;
 public:
 	bool CanSwapWeapons();

@@ -115,14 +115,15 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
 
 		if (HUD) {
-			if (EquippedWeapon) {
+			if (EquippedWeapon && !bHoldingTheFlag) {
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
 				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
 				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
-				
-			} else {
+			}
+			else
+			{
 				HUDPackage.CrosshairsCenter = nullptr;
 				HUDPackage.CrosshairsLeft = nullptr;
 				HUDPackage.CrosshairsRight = nullptr;
@@ -432,7 +433,6 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		// Offset Yaw for Strafing
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
-		Character->SetOverlappingWeapon(nullptr);
 	}
 }
 
@@ -452,18 +452,25 @@ void UCombatComponent::ThrowEquippedWeapon()
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied)	return;
-	DropEquippedWeapon();
-	// client, local prediction
-	if (SecondaryWeapon) {
-		EquipPrimaryWeapon(SecondaryWeapon);
-		SecondaryWeapon = nullptr;
-	} else
+	if (bHoldingTheFlag)
 	{
-		ResetCombat();	
+		DropFlag();
 	}
-	if (Character && !Character->HasAuthority())
+	else
 	{
-		ServerOnThrowEquippedWeapon();
+		DropEquippedWeapon();
+		// client, local prediction
+		if (SecondaryWeapon) {
+			EquipPrimaryWeapon(SecondaryWeapon);
+			SecondaryWeapon = nullptr;
+		} else
+		{
+			ResetCombat();	
+		}
+		if (Character && !Character->HasAuthority())
+		{
+			ServerOnThrowEquippedWeapon();
+		}
 	}
 }
 
@@ -508,7 +515,6 @@ void UCombatComponent::HoldFlag(AFlag* FlagToHold)
 
 void UCombatComponent::DropEquippedWeapon()
 {
-	//TODO: drop flag  
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->Dropped();
@@ -530,6 +536,34 @@ void UCombatComponent::ServerDropEquippedWeapon_Implementation(const FVector_Net
 		FVector ThrowDirection = (Target - Character->GetActorLocation()).GetSafeNormal();
 		EquippedWeapon->GetWeaponMesh()->AddImpulse(ThrowDirection * ThrowStrength, NAME_None, true);
 		EquippedWeapon = nullptr;	
+	}
+}
+
+void UCombatComponent::DropFlag()
+{
+	if (TheFlag)
+	{
+		TheFlag->Dropped();
+		FVector ThrowDirection = (HitTarget - Character->GetActorLocation()).GetSafeNormal();
+		TheFlag->GetWeaponMesh()->AddImpulse(ThrowDirection * ThrowStrength, NAME_None, true);
+		TheFlag = nullptr;
+		bHoldingTheFlag = false;
+	}
+	if (Character && !Character->HasAuthority())
+	{
+		ServerDropFlag(HitTarget);
+	}
+}
+
+void UCombatComponent::ServerDropFlag_Implementation(const FVector_NetQuantize& Target)
+{
+	if (TheFlag)
+	{
+		TheFlag->Dropped();
+		FVector ThrowDirection = (Target - Character->GetActorLocation()).GetSafeNormal();
+		TheFlag->GetWeaponMesh()->AddImpulse(ThrowDirection * ThrowStrength, NAME_None, true);
+		TheFlag = nullptr;
+		bHoldingTheFlag = false;
 	}
 }
 
