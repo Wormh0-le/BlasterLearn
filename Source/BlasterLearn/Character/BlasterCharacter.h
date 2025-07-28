@@ -288,7 +288,7 @@ private:
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);
 
-	void StartDissolve();
+	void StartDissolve(bool bReverse = false);
 
 	// Dynamic Instance that we change at runtime
 	UPROPERTY(VisibleAnywhere, Category = Elim)

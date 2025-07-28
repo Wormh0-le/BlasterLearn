@@ -355,7 +355,6 @@ void ABlasterCharacter::SetSpawnPoint()
 			{
 				ChosenPlayerStart = BlasterGameState->TeamRedPlayerStarts[FMath::RandRange(0, BlasterGameState->TeamRedPlayerStarts.Num() - 1)];
 			}
-			
 			SetActorLocationAndRotation(ChosenPlayerStart->GetActorLocation(), ChosenPlayerStart->GetActorRotation());
 		}
 	}
@@ -979,13 +978,20 @@ void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
 	}
 }
 
-void ABlasterCharacter::StartDissolve()
+void ABlasterCharacter::StartDissolve(bool bReverse)
 {
 	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdateDissolveMaterial);
 	if (DissolveCurve && DissolveTimeline)
 	{
 		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
-		DissolveTimeline->Play();
+		if (bReverse)
+		{
+			DissolveTimeline->Reverse();
+		}
+		else
+		{
+			DissolveTimeline->Play();	
+		}
 	}
 }
 
