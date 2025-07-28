@@ -19,7 +19,7 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	float JumpZVelocityBuff = 2500.f;
+	float JumpZVelocityBuff = 900.f;
 
 	UPROPERTY(EditAnywhere)
 	float JumpBuffTime = 5.f;

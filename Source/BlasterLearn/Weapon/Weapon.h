@@ -138,6 +138,9 @@ protected:
 	void OnPingTooHigh(bool bHighPing);
 
 	virtual void OnRep_Owner() override;
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	class UWidgetComponent* PickUpWidget;
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -150,9 +153,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_WeaponState();
-
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class UWidgetComponent* PickUpWidget;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;

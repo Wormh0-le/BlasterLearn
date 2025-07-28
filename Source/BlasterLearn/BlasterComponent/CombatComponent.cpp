@@ -2,6 +2,8 @@
 
 
 #include "CombatComponent.h"
+
+#include "BuffComponent.h"
 #include "BlasterLearn/Weapon/Weapon.h"
 #include "BlasterLearn/Character/BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -419,6 +421,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (WeaponToEquip->GetWeaponType() == EWeaponType::EWT_Flag)
 	{
 		HoldFlag(Cast<AFlag>(WeaponToEquip));
+		if (UBuffComponent* BuffComponent = Character->GetBuff())
+		{
+			BuffComponent->MulticastBuffSpeed(300.f, 100.f);
+			BuffComponent->MulticastJumpVelocity(450.f);
+		}
 	}
 	else
 	{
@@ -452,26 +459,26 @@ void UCombatComponent::ThrowEquippedWeapon()
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied)	return;
-	if (bHoldingTheFlag)
+	// if (bHoldingTheFlag)
+	// {
+	// 	DropFlag();
+	// }
+	// else
+	// {
+	DropEquippedWeapon();
+	// client, local prediction
+	if (SecondaryWeapon) {
+		EquipPrimaryWeapon(SecondaryWeapon);
+		SecondaryWeapon = nullptr;
+	} else
 	{
-		DropFlag();
+		ResetCombat();	
 	}
-	else
+	if (Character && !Character->HasAuthority())
 	{
-		DropEquippedWeapon();
-		// client, local prediction
-		if (SecondaryWeapon) {
-			EquipPrimaryWeapon(SecondaryWeapon);
-			SecondaryWeapon = nullptr;
-		} else
-		{
-			ResetCombat();	
-		}
-		if (Character && !Character->HasAuthority())
-		{
-			ServerOnThrowEquippedWeapon();
-		}
+		ServerOnThrowEquippedWeapon();
 	}
+	// }
 }
 
 void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
@@ -991,5 +998,6 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME(UCombatComponent, Grenades);
 	DOREPLIFETIME(UCombatComponent, bHoldingTheFlag);
+	DOREPLIFETIME(UCombatComponent,	TheFlag);
 }
 

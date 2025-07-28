@@ -36,6 +36,7 @@ void AFlag::Dropped()
 	SetWeaponState(EWeaponState::EWS_Dropped);
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	FlagMesh->DetachFromComponent(DetachRules);
+	SetActorRotation(FRotator(0, 0, 0));
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
@@ -87,8 +88,8 @@ void AFlag::OnEquipped()
 void AFlag::OnDropped()
 {
 	GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);	
-	FlagMesh->SetSimulatePhysics(true);
-	FlagMesh->SetEnableGravity(true);
+	// FlagMesh->SetSimulatePhysics(true);
+	// FlagMesh->SetEnableGravity(true);
 	FlagMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	FlagMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	FlagMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);

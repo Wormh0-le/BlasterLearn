@@ -569,7 +569,7 @@ void ABlasterCharacter::Destroyed()
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
 {
-	if (bDisableGameplay)
+	if (bDisableGameplay || IsHoldingTheFlag())
 	{
 		bUseControllerRotationYaw = false;
 
@@ -607,7 +607,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 void ABlasterCharacter::Jump()
 {
-	if (bDisableGameplay || IsHoldingTheFlag()) return;
+	if (bDisableGameplay) return;
 	if (bIsCrouched) {
 		UnCrouch();
 	} else {
@@ -689,7 +689,7 @@ void ABlasterCharacter::EquipButtonPressed()
 
 void ABlasterCharacter::CrouchButtonPressed()
 {
-	if (bDisableGameplay || IsHoldingTheFlag()) return;
+	if (bDisableGameplay) return;
 	if (bIsCrouched) {
 		UnCrouch();
 	}
@@ -733,7 +733,7 @@ void ABlasterCharacter::ThrowGrenadeButtonPressed()
 
 void ABlasterCharacter::ThrowEquippedWeaponButtonPressed()
 {
-	if (bDisableGameplay) return;
+	if (bDisableGameplay || IsHoldingTheFlag()) return;
 	if (Combat) {
 		Combat->ThrowEquippedWeapon();
 	}

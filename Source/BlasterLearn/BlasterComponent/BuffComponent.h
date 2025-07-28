@@ -22,6 +22,12 @@ public:
 	void SetInitialSpeed(float BaseSpeed, float CrouchSpeed);
 	void BuffJump(float BuffJumpVelocity, float BuffTime);
 	void SetInitialJumpVelocity(float Velocity);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastJumpVelocity(float JumpVelocity);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastBuffSpeed(float BaseSpeed, float CrouchSpeed);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -35,6 +41,15 @@ public:
 private:
 	UPROPERTY()
 	ABlasterCharacter* Character;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxBaseSpeed = 2000.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxCrouchSpeed = 1000.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxJumpVelocity = 3200.f;
 
 	// Health buff
 	bool bHealing = false;
@@ -52,14 +67,8 @@ private:
 	float InitialBaseSpeed;
 	float InitialCrouchSpeed;
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastBuffSpeed(float BaseSpeed, float CrouchSpeed);
-
 	// Jump buff
 	FTimerHandle JumpBuffTimer;
 	void ResetJump();
 	float InitialJumpVelocity;
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastJumpVelocity(float JumpVelocity);
 };

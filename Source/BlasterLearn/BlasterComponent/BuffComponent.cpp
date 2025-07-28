@@ -31,6 +31,7 @@ void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	HealRampUp(DeltaTime);
+	ReplenishRampUp(DeltaTime);
 }
 
 void UBuffComponent::Heal(float HealAmount, float HealingTime)
@@ -50,7 +51,8 @@ void UBuffComponent::Replenish(float ShieldAmount, float ReplenishTime)
 void UBuffComponent::HealRampUp(float DeltaTime)
 {
 	if (!bHealing || Character == nullptr || Character->IsElimmed())	return;
-	const float HealThisFrame = HealingRate * DeltaTime;
+	float HealThisFrame = HealingRate * DeltaTime;
+	if (Character->IsHoldingTheFlag()) HealThisFrame *= 2;
 	Character->SetHealth(FMath::Clamp(Character->GetHealth() + HealThisFrame, 0.f, Character->GetMaxHealth()));
 	Character->UpdateHUDHealth();
 	AmountToHeal -= HealThisFrame;
@@ -65,7 +67,8 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 void UBuffComponent::ReplenishRampUp(float DeltaTime)
 {
 	if (!bReplenish || Character == nullptr || Character->IsElimmed())	return;
-	const float ReplenishThisFrame = ReplenishRate * DeltaTime;
+	float ReplenishThisFrame = ReplenishRate * DeltaTime;
+	if (Character->IsHoldingTheFlag()) ReplenishThisFrame *= 2;
 	Character->SetShield(FMath::Clamp(Character->GetShield() + ReplenishThisFrame, 0.f, Character->GetMaxShield()));
 	Character->UpdateHUDShield();
 	AmountToReplenish -= ReplenishThisFrame;
@@ -86,19 +89,18 @@ void UBuffComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float
 		&UBuffComponent::ResetSpeed,
 		BuffTime
 	);
-
 	if (Character->GetCharacterMovement())
 	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = BuffBaseSpeed;
-		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = BuffCrouchSpeed;
+		Character->GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp(Character->GetCharacterMovement()->MaxWalkSpeed + BuffBaseSpeed, InitialBaseSpeed, MaxBaseSpeed);
+		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = FMath::Clamp(Character->GetCharacterMovement()->MaxWalkSpeedCrouched + BuffCrouchSpeed, InitialCrouchSpeed, MaxCrouchSpeed);
 	}
 	MulticastBuffSpeed(BuffBaseSpeed, BuffCrouchSpeed);
 }
 
 void UBuffComponent::MulticastBuffSpeed_Implementation(float BaseSpeed, float CrouchSpeed)
 {
-	Character->GetCharacterMovement()->MaxWalkSpeed = BaseSpeed;
-	Character->GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
+	Character->GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp(Character->GetCharacterMovement()->MaxWalkSpeed + BaseSpeed, InitialBaseSpeed, MaxBaseSpeed);
+	Character->GetCharacterMovement()->MaxWalkSpeedCrouched = FMath::Clamp(Character->GetCharacterMovement()->MaxWalkSpeedCrouched + CrouchSpeed, InitialCrouchSpeed, MaxCrouchSpeed);
 }
 
 void UBuffComponent::SetInitialSpeed(float BaseSpeed, float CrouchSpeed)
@@ -132,7 +134,7 @@ void UBuffComponent::BuffJump(float BuffJumpVelocity, float BuffTime)
 
 	if (Character->GetCharacterMovement())
 	{
-		Character->GetCharacterMovement()->JumpZVelocity = BuffJumpVelocity;
+		Character->GetCharacterMovement()->JumpZVelocity = FMath::Clamp(Character->GetCharacterMovement()->JumpZVelocity + BuffJumpVelocity, InitialJumpVelocity, MaxJumpVelocity);
 	}
 	MulticastJumpVelocity(BuffJumpVelocity);
 }
@@ -146,5 +148,5 @@ void UBuffComponent::ResetJump()
 
 void UBuffComponent::MulticastJumpVelocity_Implementation(float JumpVelocity)
 {
-	Character->GetCharacterMovement()->JumpZVelocity = JumpVelocity;
+	Character->GetCharacterMovement()->JumpZVelocity = FMath::Clamp(Character->GetCharacterMovement()->JumpZVelocity + JumpVelocity, InitialJumpVelocity, MaxJumpVelocity);
 }
