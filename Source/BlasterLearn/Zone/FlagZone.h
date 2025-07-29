@@ -39,14 +39,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY()
+	class UDualBarStatusWidget* ZoneStatusWidget;
+
 	UPROPERTY(EditDefaultsOnly)
 	FString ZoneName;
 
 	UPROPERTY(EditDefaultsOnly)
 	bool bBaseZone;
 
-	UPROPERTY(Replicated)
-	bool bTeleportCooldown = false;
+	void TeleportCooldown();
+
+	void HealCooldown();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -112,9 +116,6 @@ private:
 	class UWidgetComponent* ZoneStatusWidgetComponent;
 
 	UPROPERTY()
-	class UDualBarStatusWidget* ZoneStatusWidget;
-
-	UPROPERTY()
 	class ACaptureTheFlagGameMode* CaptureGameMode;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -131,6 +132,24 @@ private:
 
 	void UpdateZoneStatusBar(float DeltaTime);
 
+	UPROPERTY(Replicated)
+	bool bHealCooldown = false;
+
+	UPROPERTY(Replicated)
+	bool bTeleportCooldown = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	float TeleportCoolDownTime = 5.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float HealCoolDownTime = 20.f;
+
+	FTimerHandle HealSkillTimer;
+
+	FTimerHandle TeleportSkillTimer;
+
 public:
-	FORCEINLINE ETeam GetOwnerTeam() { return OwnerTeam; }
+	FORCEINLINE ETeam GetOwnerTeam() const { return OwnerTeam; }
+	FORCEINLINE bool IsTeleportCooldown() const { return bTeleportCooldown; }
+	FORCEINLINE bool IsHealCooldown() const { return bHealCooldown; }
 };

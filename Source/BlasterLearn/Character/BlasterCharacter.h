@@ -103,6 +103,7 @@ protected:
 	void AimButtonReleased();
 	void ThrowGrenadeButtonPressed();
 	void ThrowEquippedWeaponButtonPressed();
+	void TravelButtonPressed();
 	void CalculateAO_Pitch();
 	void AimOffset(float DeltaTime);
 	void SimProxiesTurn();
@@ -184,8 +185,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
 
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	AWeapon* OverlappingWeapon;
+
+	UPROPERTY()
+	class AFlagZone* OverlappingTeleport;
 
 	// UFUNCTION()
 	// void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
@@ -355,6 +359,7 @@ public:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void SetOverlappingWeapon(AWeapon* Weapon);
+	void SetOverlappingTeleport(AFlagZone* Zone);
 	bool IsWeaponEquipped();
 	bool IsAimming();
 	FORCEINLINE float Get_AO_Yaw() const { return AO_Yaw; }

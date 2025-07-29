@@ -11,6 +11,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
 
 
@@ -53,17 +54,19 @@ void AFlagZone::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AFlagZone::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-}
-
 void AFlagZone::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	PollInit();
 	HandleZoneStatus();
 	UpdateZoneStatusBar(DeltaTime);
+}
+
+void AFlagZone::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AFlagZone, bTeleportCooldown);
+	DOREPLIFETIME(AFlagZone, bHealCooldown);
 }
 
 void AFlagZone::PollInit()
@@ -94,6 +97,24 @@ void AFlagZone::PollInit()
 		ZoneAreaBox->OnComponentBeginOverlap.AddDynamic(this, &AFlagZone::OnAreaBoxOverlap);
 		ZoneAreaBox->OnComponentEndOverlap.AddDynamic(this, &AFlagZone::OnAreaBoxEndOverlap);
 	}
+}
+
+void AFlagZone::TeleportCooldown()
+{
+	bTeleportCooldown = true;
+	GetWorldTimerManager().SetTimer(TeleportSkillTimer, [&]()
+	{
+		bTeleportCooldown = false;
+	}, TeleportCoolDownTime, false);
+}
+
+void AFlagZone::HealCooldown()
+{
+	bHealCooldown = true;
+	GetWorldTimerManager().SetTimer(HealSkillTimer, [&]()
+	{
+		bTeleportCooldown = false;
+	}, HealCoolDownTime, false);
 }
 
 void AFlagZone::HandleZoneStatus()
@@ -337,7 +358,7 @@ void AFlagZone::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter && BlasterCharacter->GetTeam() == OwnerTeam && ZoneStatus == EZoneStatus::EZS_Occupied)
 	{
-		ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("E - Teleport")));
+		BlasterCharacter->SetOverlappingTeleport(this);
 	}
 }
 
@@ -348,6 +369,6 @@ void AFlagZone::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter && BlasterCharacter->GetTeam() == OwnerTeam && ZoneStatus == EZoneStatus::EZS_Occupied)
 	{
-		ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
+		BlasterCharacter->SetOverlappingTeleport(nullptr);
 	}
 }

@@ -25,9 +25,11 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "BlasterLearn/GameState/BlasterGameState.h"
+#include "BlasterLearn/HUD/DualBarStatusWidget.h"
 #include "BlasterLearn/PlayerStart/TeamPlayerStart.h"
 #include "BlasterLearn/Weapon/Flag.h"
 #include "BlasterLearn/Weapon/Projectile.h"
+#include "BlasterLearn/Zone/FlagZone.h"
 #include "Engine/SkeletalMeshSocket.h"
 
 
@@ -168,7 +170,7 @@ ABlasterCharacter::ABlasterCharacter()
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	// DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, Health);
 	DOREPLIFETIME(ABlasterCharacter, Shield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
@@ -738,6 +740,10 @@ void ABlasterCharacter::ThrowEquippedWeaponButtonPressed()
 	}
 }
 
+void ABlasterCharacter::TravelButtonPressed()
+{
+}
+
 void ABlasterCharacter::CalculateAO_Pitch()
 {
 	AO_Pitch = GetBaseAimRotation().Pitch;
@@ -1012,6 +1018,32 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	}
 }
 
+void ABlasterCharacter::SetOverlappingTeleport(AFlagZone* Zone)
+{
+	if (OverlappingTeleport)
+	{
+		OverlappingTeleport->ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("")));
+	}
+	OverlappingTeleport = Zone;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingTeleport)
+		{
+			FString StatusStr = OverlappingTeleport->IsTeleportCooldown() ? TEXT("Teleport is Cooling") : TEXT("Z - Teleport");
+			OverlappingTeleport->ZoneStatusWidget->SetStatusInfo(FText::FromString(StatusStr));
+		}
+	}
+	if (HasAuthority())
+	{
+		if (IsHoldingTheFlag() && Buff && OverlappingTeleport && !OverlappingTeleport->IsHealCooldown())
+		{
+			Buff->Heal(50.f, 10.f);
+			Buff->Replenish(50.f, 10.f);
+			OverlappingTeleport->HealCooldown();
+		}
+	}
+}
+
 bool ABlasterCharacter::IsWeaponEquipped()
 {
 	return (Combat && Combat->EquippedWeapon);
@@ -1073,6 +1105,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &ABlasterCharacter::LookUp);
 	
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipButtonPressed);
+	PlayerInputComponent->BindAction("Travel", IE_Pressed, this, &ABlasterCharacter::TravelButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ABlasterCharacter::CrouchButtonPressed);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
