@@ -117,6 +117,25 @@ void AFlagZone::HealCooldown()
 	}, HealCoolDownTime, false);
 }
 
+// void AFlagZone::ClientSetStatusInfo_Implementation(const FText& ServerInfoText)
+// {
+// 	if (ZoneStatusWidget)
+// 	{
+// 		ZoneStatusWidget->SetStatusInfo(ServerInfoText);
+// 	}
+// }
+
+FVector AFlagZone::GetTeleportDestPoint()
+{
+	if (ZoneAreaBox)
+	{
+		FVector PointInBox = FMath::RandPointInBox(FBox::BuildAABB(ZoneAreaBox->GetComponentLocation(), ZoneAreaBox->GetScaledBoxExtent()));
+		FVector DestPoint{PointInBox.X, PointInBox.Y, GetActorLocation().Z + 10.f};
+		return DestPoint;
+	}
+	return FVector::ZeroVector;
+}
+
 void AFlagZone::HandleZoneStatus()
 {
 	if (TeamBluePlayerInArea == TeamRedPlayerInArea && TeamBluePlayerInArea == 0)	return;

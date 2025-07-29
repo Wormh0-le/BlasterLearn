@@ -174,6 +174,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ABlasterCharacter, Health);
 	DOREPLIFETIME(ABlasterCharacter, Shield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
+	DOREPLIFETIME(ABlasterCharacter, TeleportResult);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -391,6 +392,33 @@ void ABlasterCharacter::AttachFlagToLeftHand(AFlag* Flag)
 	}
 }
 
+void ABlasterCharacter::DisableCharacter(bool bNeedCollision)
+{
+	// GetCharacterMovement()->DisableMovement();
+	// GetCharacterMovement()->StopMovementImmediately();
+	// if (BlasterPlayerController)
+	// {
+	// 	DisableInput(BlasterPlayerController);
+	// }
+	bDisableGameplay = true;
+	// avoid character fall through floor directly
+	GetCharacterMovement()->DisableMovement();
+	FireButtonReleased();
+	// disable collision
+	if (bNeedCollision)
+	{
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);	
+	}
+
+	bool bHideSniperScope = IsLocallyControlled() && Combat && Combat->bAiming && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle; 
+	if (bHideSniperScope)
+	{
+		ShowSniperScopeWidget(false);
+	}
+}
+
 void ABlasterCharacter::Elim(bool bPlayerLeftGame)
 {
 	DropOrDestroyWeapons();
@@ -408,29 +436,9 @@ void ABlasterCharacter::MultiCastElim_Implementation(bool bPlayerLeftGame)
 	}
 	bElimmed = true;
 	PlayElimMontage();
-
-	if (DissolveMaterialInstance)
-	{
-		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
-		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
-		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
-		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
-	}
+	
 	StartDissolve();
-	// GetCharacterMovement()->DisableMovement();
-	// GetCharacterMovement()->StopMovementImmediately();
-	// if (BlasterPlayerController)
-	// {
-	// 	DisableInput(BlasterPlayerController);
-	// }
-	bDisableGameplay = true;
-	// avoid character fall through floor directly
-	GetCharacterMovement()->DisableMovement();
-	FireButtonReleased();
-	// disable collision
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	DisableCharacter();
 
 	if (ElimBotEffect)
 	{
@@ -448,17 +456,18 @@ void ABlasterCharacter::MultiCastElim_Implementation(bool bPlayerLeftGame)
 			GetActorLocation()
 		);
 	}
-	bool bHideSniperScope = IsLocallyControlled() && Combat && Combat->bAiming && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle; 
-	if (bHideSniperScope)
-	{
-		ShowSniperScopeWidget(false);
-	}
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
 		this,
 		&ABlasterCharacter::ElimTimerFinished,
 		ElimDelay
 	);
+}
+
+void ABlasterCharacter::MultiCastTeleport_Implementation()
+{
+	StartDissolve();
+	DisableCharacter(false);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -742,6 +751,26 @@ void ABlasterCharacter::ThrowEquippedWeaponButtonPressed()
 
 void ABlasterCharacter::TravelButtonPressed()
 {
+	if (bDisableGameplay)	return;
+	if (Combat)
+	{
+		if (Combat->CombatState == ECombatState::ECS_Unoccupied && !Combat->bLocallyReloading && bFinishSwapping)
+		{
+			CachedTeleport = OverlappingTeleport;
+			ServerTravelButtonPressed(CachedTeleport);
+			if (IsLocallyControlled())
+			{
+				if (TeleportResult == 1)
+				{
+					CachedTeleport->ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("Teleport Failed, Please retry")));	
+				}
+				if (TeleportResult == 2)
+				{
+					CachedTeleport->ZoneStatusWidget->SetStatusInfo(FText::FromString(TEXT("No available Teleport Point")));
+				}
+			}
+		}
+	}
 }
 
 void ABlasterCharacter::CalculateAO_Pitch()
@@ -852,6 +881,41 @@ void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 		} else if (Combat->CanSwapWeapons())
 		{
 			Combat->SwapWeapons();
+		}
+	}
+}
+
+void ABlasterCharacter::ServerTravelButtonPressed_Implementation(AFlagZone* UsingZone)
+{
+	if (UsingZone && !UsingZone->IsTeleportCooldown())
+	{
+		BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
+		if (BlasterGameState)
+		{
+			TArray<AFlagZone*> TeleportableZones;
+			for (auto FlagZone : BlasterGameState->AllTeleports)
+			{
+				if (GetTeam() == FlagZone->GetOwnerTeam() && FlagZone->IsOccupied() && FlagZone->ZoneName != UsingZone->ZoneName)
+				{
+					TeleportableZones.Add(FlagZone);
+				}
+			}
+			if (TeleportableZones.Num() > 0)
+			{
+				AFlagZone* SelectedTeleport = TeleportableZones[FMath::RandRange(0, TeleportableZones.Num() - 1)];
+				if (TeleportTo(SelectedTeleport->GetTeleportDestPoint(), GetActorRotation()))
+				{
+					UsingZone->TeleportCooldown();
+				}
+				else
+				{
+					TeleportResult = 1;
+				}
+			}
+			else
+			{
+				TeleportResult = 2;
+			}
 		}
 	}
 }
@@ -986,6 +1050,13 @@ void ABlasterCharacter::UpdateDissolveMaterial(float DissolveValue)
 
 void ABlasterCharacter::StartDissolve(bool bReverse)
 {
+	if (DissolveMaterialInstance)
+	{
+		DynamicDissolveMaterialInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstance);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMaterialInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
 	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdateDissolveMaterial);
 	if (DissolveCurve && DissolveTimeline)
 	{

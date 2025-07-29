@@ -49,6 +49,11 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastElim(bool bPlayerLeftGame);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastTeleport();
+
+	void DisableCharacter(bool bNeedCollision = false);
+	
 	FOnLeftGame OnLeftGame;
 	
 	UFUNCTION(Server, Reliable)
@@ -191,6 +196,9 @@ private:
 	UPROPERTY()
 	class AFlagZone* OverlappingTeleport;
 
+	UPROPERTY()
+	AFlagZone* CachedTeleport;
+
 	// UFUNCTION()
 	// void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
@@ -205,6 +213,12 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquippedButtonPressed();
+
+	UFUNCTION(Server, Reliable)
+	void ServerTravelButtonPressed(AFlagZone* UsingZone);
+
+	UPROPERTY(Replicated)
+	int32 TeleportResult = 0;
 
 	float AO_Yaw;
 	float InterpAO_Yaw;

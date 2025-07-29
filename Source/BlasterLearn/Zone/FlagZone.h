@@ -42,7 +42,7 @@ public:
 	UPROPERTY()
 	class UDualBarStatusWidget* ZoneStatusWidget;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	FString ZoneName;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -51,6 +51,11 @@ public:
 	void TeleportCooldown();
 
 	void HealCooldown();
+
+	// UFUNCTION(Client, Reliable)
+	// void ClientSetStatusInfo(const FText& ServerInfoText);
+
+	FVector GetTeleportDestPoint();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -152,4 +157,5 @@ public:
 	FORCEINLINE ETeam GetOwnerTeam() const { return OwnerTeam; }
 	FORCEINLINE bool IsTeleportCooldown() const { return bTeleportCooldown; }
 	FORCEINLINE bool IsHealCooldown() const { return bHealCooldown; }
+	FORCEINLINE bool IsOccupied() const { return ZoneStatus == EZoneStatus::EZS_Occupied; }
 };
