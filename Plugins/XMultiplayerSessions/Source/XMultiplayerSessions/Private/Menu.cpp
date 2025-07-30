@@ -104,7 +104,7 @@ void UMenu::OnRefreshSessionList(const TArray<FOnlineSessionSearchResult>& Sessi
    SB_SessionList->ClearChildren();
    for (const FOnlineSessionSearchResult& Result : SessionResults) {  
        FString SettingsValue;  
-       Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
+       Result.Session.SessionSettings.Get(FName("SearchKey"), SettingsValue);
 
        if (SettingsValue == SearchKey) {      
 		//FString Id = Result.GetSessionIdStr();
