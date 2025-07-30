@@ -52,7 +52,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MultiCastTeleport();
 
-	void DisableCharacter(bool bNeedCollision = false);
+	void DisableCharacter(bool bElim = false);
 	
 	FOnLeftGame OnLeftGame;
 	

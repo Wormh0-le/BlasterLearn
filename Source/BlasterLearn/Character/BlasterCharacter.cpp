@@ -392,7 +392,7 @@ void ABlasterCharacter::AttachFlagToLeftHand(AFlag* Flag)
 	}
 }
 
-void ABlasterCharacter::DisableCharacter(bool bNeedCollision)
+void ABlasterCharacter::DisableCharacter(bool bElim)
 {
 	// GetCharacterMovement()->DisableMovement();
 	// GetCharacterMovement()->StopMovementImmediately();
@@ -400,13 +400,13 @@ void ABlasterCharacter::DisableCharacter(bool bNeedCollision)
 	// {
 	// 	DisableInput(BlasterPlayerController);
 	// }
-	bDisableGameplay = true;
-	// avoid character fall through floor directly
-	GetCharacterMovement()->DisableMovement();
 	FireButtonReleased();
 	// disable collision
-	if (bNeedCollision)
+	if (bElim)
 	{
+		bDisableGameplay = true;
+		// avoid character fall through floor directly
+		GetCharacterMovement()->DisableMovement();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);	

@@ -6,7 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "SessionListItem.generated.h"
@@ -46,6 +45,7 @@ private:
 	void JoinButtonClicked();
 
 	// The subsystem designed to handle all online session functionality
+	UPROPERTY()
 	class UXMultiPlayerSessionsSubsystem* MultiPlayerSessionsSubsystem;
 
 	TSharedPtr<FOnlineSessionSearchResult> SessionResult;

@@ -3,6 +3,7 @@
 
 #include "SessionListItem.h"
 
+#include "OnlineSubsystemUtils.h"
 #include "XMultiPlayerSessionsSubsystem.h"
 
 void USessionListItem::SessionListItemSetup(FString& HostUserNameStr, FString& UserCountStr, FString& LatencyStr, TSharedPtr<FOnlineSessionSearchResult> SessionResultPtr)
@@ -46,7 +47,7 @@ void USessionListItem::NativeDestruct()
 
 void USessionListItem::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
-	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
+	IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
 	if (Subsystem) {
 		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
 		if (SessionInterface.IsValid()) {

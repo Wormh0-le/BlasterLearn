@@ -4,13 +4,10 @@
 #include "Menu.h"
 #include "XMultiPlayerSessionsSubsystem.h"
 #include "SessionListItem.h"
+#include "Components/ComboBoxString.h"
 
-void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
+void UMenu::MenuSetup()
 {
-	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
-	NumPublicConnections = NumberOfPublicConnections;
-	MatchType = TypeOfMatch;
-	
 	SetRenderScale({0.5, 0.5});
 	SetRenderOpacity(0.7f);
 	SetVisibility(ESlateVisibility::Visible);
@@ -106,24 +103,24 @@ void UMenu::OnRefreshSessionList(const TArray<FOnlineSessionSearchResult>& Sessi
    TitleText->SetText(FText::FromString(TEXT("房间列表"))); 
    SB_SessionList->ClearChildren();
    for (const FOnlineSessionSearchResult& Result : SessionResults) {  
-       //FString SettingsValue;  
-       //Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
+       FString SettingsValue;  
+       Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
 
-       //if (SettingsValue == MatchType) {      
+       if (SettingsValue == SearchKey) {      
 		//FString Id = Result.GetSessionIdStr();
-		FString HostUserName = FString::Printf(TEXT("%s"), *Result.Session.OwningUserName);
-		int32 MaxUsers = Result.Session.SessionSettings.NumPublicConnections;  
-		int32 CurrentUsers = MaxUsers - Result.Session.NumOpenPublicConnections;  
-		FString LatencyStr = FString::Printf(TEXT("%dms"), Result.PingInMs);  
-		FString UserCountStr = FString::Printf(TEXT("%d/%d"), CurrentUsers, MaxUsers);  
+			FString HostUserName = FString::Printf(TEXT("%s"), *Result.Session.OwningUserName);
+			int32 MaxUsers = Result.Session.SessionSettings.NumPublicConnections;  
+			int32 CurrentUsers = MaxUsers - Result.Session.NumOpenPublicConnections;  
+			FString LatencyStr = FString::Printf(TEXT("%dms"), Result.PingInMs);  
+			FString UserCountStr = FString::Printf(TEXT("%d/%d"), CurrentUsers, MaxUsers);  
 
-		USessionListItem* SessionItem = CreateWidget<USessionListItem>(this, ItemWidgetClass);  
-		if (SessionItem) {  
-			TSharedPtr<FOnlineSessionSearchResult> ResultPtr = MakeShared<FOnlineSessionSearchResult>(Result);  
-			SessionItem->SessionListItemSetup(HostUserName, UserCountStr, LatencyStr, ResultPtr);
-			SB_SessionList->AddChild(SessionItem);  
-		}  
-       //}  
+			USessionListItem* SessionItem = CreateWidget<USessionListItem>(this, ItemWidgetClass);  
+			if (SessionItem) {  
+				TSharedPtr<FOnlineSessionSearchResult> ResultPtr = MakeShared<FOnlineSessionSearchResult>(Result);  
+				SessionItem->SessionListItemSetup(HostUserName, UserCountStr, LatencyStr, ResultPtr);
+				SB_SessionList->AddChild(SessionItem);  
+			}  
+       }  
    }  
    if (bWasSuccessful || SessionResults.Num() == 0) {  
        Btn_Refresh->SetIsEnabled(true);  
@@ -184,7 +181,9 @@ void UMenu::HostButtonClicked()
 	Btn_Host->SetIsEnabled(false);
 	if (MultiPlayerSessionsSubsystem)
 	{
-		MultiPlayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
+		NumPublicConnections = FCString::Atoi(*CB_PlayerNum->GetSelectedOption());
+		MatchType = CB_MatchType->GetSelectedOption();
+		MultiPlayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType, SearchKey);
 	}
 }
 

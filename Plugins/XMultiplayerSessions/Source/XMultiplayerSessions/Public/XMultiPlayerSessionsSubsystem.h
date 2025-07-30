@@ -30,7 +30,7 @@ public:
 	UXMultiPlayerSessionsSubsystem();
 
 	// To handle session functionality. The menu class will call these
-	void CreateSession(int32 NumPublicConnections, FString MatchType);
+	void CreateSession(int32 NumPublicConnections, const FString& MatchType, const FString& SearchKey);
 	void FindSessions(int32 MaxSearchResults);
 	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
 	void DestroySession();
@@ -43,6 +43,9 @@ public:
 	FMultiPlayerOnDestroySessionComplete MultiPlayerOnDestroySessionComplete;
 	FMultiPlayerOnStartSessionComplete MultiPlayerOnStartSessionComplete;
 
+	int32 DesiredNumPublicConnections{};
+	FString DesiredMatchType{};
+	
 protected:
 	// Internal callbacks for the delegates we'll add to the Online Session Interface delegate list.
 	// These don't need to be called outside this class.
@@ -54,7 +57,9 @@ protected:
 	void OnStartSessionComplete(FName SessionName, bool bWasSuccessful);
 
 private:
-	IOnlineSessionPtr SessionInterface;
+	IOnlineSubsystem* OnlineSubsystem;
+	TWeakPtr<IOnlineSession> SessionInterfaceWeakPtr;
+	
 	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
 	TSharedPtr<FOnlineSessionSearch> LastSessionSearchSettings;
 
@@ -74,5 +79,6 @@ private:
 
 	int32 LastNumPublicConnections;
 	FString LastMatchType;
+	FString LastSearchKey;
 	bool bCreateSessionOnDestroy{ false };
 };

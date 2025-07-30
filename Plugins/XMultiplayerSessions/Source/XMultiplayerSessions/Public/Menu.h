@@ -22,7 +22,7 @@ class XMULTIPLAYERSESSIONS_API UMenu : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForXverse")), FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby")));
+	void MenuSetup();
 
 protected:
 	virtual bool Initialize() override;
@@ -56,6 +56,12 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UScrollBox* SB_SessionList;
 
+	UPROPERTY(meta = (BindWidget))
+	class UComboBoxString* CB_PlayerNum;
+
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* CB_MatchType;
+
 	UFUNCTION()
 	void HostButtonClicked();
 
@@ -65,11 +71,13 @@ private:
 	void Menu_TearDown();
 	
 	// The subsystem designed to handle all online session functionality
+	UPROPERTY()
 	class UXMultiPlayerSessionsSubsystem* MultiPlayerSessionsSubsystem;
 
 	int32 NumPublicConnections{4};
-	FString MatchType{TEXT("FreeForXverse")};
-	FString PathToLobby{TEXT("")};
+	FString MatchType{TEXT("Solo")};
+	FString SearchKey{TEXT("Wormh01e")};
+	FString PathToLobby{TEXT("/Game/Maps/Lobby?listen")};
 
 	UPROPERTY(EditAnywhere, Category = "ScrollItemSetting")
 	TSubclassOf<UUserWidget> ItemWidgetClass;
