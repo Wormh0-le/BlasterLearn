@@ -57,8 +57,7 @@ protected:
 	void OnStartSessionComplete(FName SessionName, bool bWasSuccessful);
 
 private:
-	IOnlineSubsystem* OnlineSubsystem;
-	TWeakPtr<IOnlineSession> SessionInterfaceWeakPtr;
+	IOnlineSessionPtr SessionInterface;
 	
 	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
 	TSharedPtr<FOnlineSessionSearch> LastSessionSearchSettings;
