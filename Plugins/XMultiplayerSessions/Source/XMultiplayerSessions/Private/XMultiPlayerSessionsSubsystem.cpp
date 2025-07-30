@@ -34,6 +34,7 @@ void UXMultiPlayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, c
 	{
 		LastNumPublicConnections = NumPublicConnections;
 		LastMatchType = MatchType;
+		LastSearchKey = SearchKey;
 		bCreateSessionOnDestroy = true;
 		DestroySession();
 	}
@@ -48,8 +49,17 @@ void UXMultiPlayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, c
 	LastSessionSettings->bShouldAdvertise = true;
 	LastSessionSettings->bUsesPresence = true;
 	LastSessionSettings->bUseLobbiesIfAvailable = true;
-	LastSessionSettings->Set(FName("MatchType"), SearchKey, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	LastSessionSettings->Set(FName("SearchKey"), SearchKey, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	LastSessionSettings->BuildUniqueId = 1;
+
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Green,
+			FString::Printf(TEXT("bIsLANMatch: %s"), LastSessionSettings->bIsLANMatch ? TEXT("true") : TEXT("false"))
+		);
+	}
 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	if (!SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings))
@@ -73,6 +83,15 @@ void UXMultiPlayerSessionsSubsystem::FindSessions(int32 MaxSearchResults)
 	LastSessionSearchSettings->MaxSearchResults = MaxSearchResults;
 	LastSessionSearchSettings->bIsLanQuery = IOnlineSubsystem::Get()->GetSubsystemName() == "NULL" ? true : false;
 	LastSessionSearchSettings->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+	
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Green,
+			FString::Printf(TEXT("bIsLanQuery: %s"), LastSessionSearchSettings->bIsLanQuery ? TEXT("true") : TEXT("false"))
+		);
+	}
 	
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	if(!SessionInterface->FindSessions(*LocalPlayer->GetPreferredUniqueNetId(), LastSessionSearchSettings.ToSharedRef())) {
@@ -129,7 +148,7 @@ void UXMultiPlayerSessionsSubsystem::OnCreateSessionComplete(FName SessionName, 
 void UXMultiPlayerSessionsSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
 {
 	if (SessionInterface.IsValid()) {
-		SessionInterface->ClearOnCancelFindSessionsCompleteDelegate_Handle(FindSessionsCompleteDelegateHandle);
+		SessionInterface->ClearOnFindSessionsCompleteDelegate_Handle(FindSessionsCompleteDelegateHandle);
 	}
 	if (LastSessionSearchSettings->SearchResults.Num() <= 0){
 		MultiPlayerOnFindSessionsComplete.Broadcast(TArray<FOnlineSessionSearchResult>(), false);
