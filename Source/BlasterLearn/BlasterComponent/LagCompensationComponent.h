@@ -33,7 +33,7 @@ struct FFramePackage
 	TMap<FName, FBoxInformation> HitBoxInfo;
 
 	UPROPERTY()
-	class ABlasterCharacter* Character;
+	class ABlasterCharacter* Character{};
 };
 
 USTRUCT()
