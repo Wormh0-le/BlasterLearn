@@ -21,16 +21,16 @@ struct FKillBannerStyleRow : public FTableRowBase
 	FLinearColor BackgroundTint = FLinearColor::White;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* KillIcon;
+	UTexture2D* KillIcon{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMaterialInterface* BackgroundMaterial;
+	UMaterialInterface* BackgroundMaterial{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bConsecutiveKillState = false ;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* VoiceCue;
+	USoundBase* VoiceCue{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxDuration = 1.0f;

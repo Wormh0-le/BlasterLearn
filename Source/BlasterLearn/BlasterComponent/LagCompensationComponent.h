@@ -86,7 +86,7 @@ protected:
 	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
 private:
 	UPROPERTY()
-	ABlasterCharacter* Character;
+	ABlasterCharacter* Character{};
 
 	UPROPERTY()
 	class ABlasterPlayerController* Controller;

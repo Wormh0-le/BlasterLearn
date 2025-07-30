@@ -14,9 +14,9 @@ UXMultiPlayerSessionsSubsystem::UXMultiPlayerSessionsSubsystem():
 	DestroySessionCompleteDelegate(FOnDestroySessionCompleteDelegate::CreateUObject(this, &ThisClass::OnDestroySessionComplete)),
 	StartSessionCompleteDelegate(FOnStartSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnStartSessionComplete))
 {
-	OnlineSubsystem = OnlineSubsystem == nullptr ? Online::GetSubsystem(GetWorld()) : OnlineSubsystem;
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
 	if (OnlineSubsystem) {
-		SessionInterfaceWeakPtr = OnlineSubsystem->GetSessionInterface();
+		SessionInterface = OnlineSubsystem->GetSessionInterface();
 	}
 }
 
@@ -24,11 +24,11 @@ void UXMultiPlayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, c
 {
 	DesiredNumPublicConnections = NumPublicConnections;
 	DesiredMatchType = MatchType;
-	if (!SessionInterfaceWeakPtr.IsValid())
+	if (!SessionInterface.IsValid())
 	{
 		return;
 	}
-	IOnlineSessionPtr SessionInterface = SessionInterfaceWeakPtr.Pin();
+	
 	auto ExistingSession = SessionInterface->GetNamedSession(NAME_GameSession);
 	if (ExistingSession != nullptr)
 	{
@@ -41,7 +41,7 @@ void UXMultiPlayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, c
 	CreateSessionCompleteDelegateHandle = SessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
 
 	LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
-	LastSessionSettings->bIsLANMatch = OnlineSubsystem->GetSubsystemName() == "NULL" ? true : false;
+	LastSessionSettings->bIsLANMatch = IOnlineSubsystem::Get()->GetSubsystemName() == "NULL" ? true : false;
 	LastSessionSettings->NumPublicConnections = NumPublicConnections;
 	LastSessionSettings->bAllowJoinInProgress = true;
 	LastSessionSettings->bAllowJoinViaPresence = true;
@@ -63,15 +63,15 @@ void UXMultiPlayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, c
 
 void UXMultiPlayerSessionsSubsystem::FindSessions(int32 MaxSearchResults)
 {
-	if (!SessionInterfaceWeakPtr.IsValid())
+	if (!SessionInterface.IsValid())
 	{
 		return;
 	}
-	IOnlineSessionPtr SessionInterface = SessionInterfaceWeakPtr.Pin();
+	
 	FindSessionsCompleteDelegateHandle = SessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FindSessionsCompleteDelegate);
 	LastSessionSearchSettings = MakeShareable(new FOnlineSessionSearch());
 	LastSessionSearchSettings->MaxSearchResults = MaxSearchResults;
-	LastSessionSearchSettings->bIsLanQuery = OnlineSubsystem->GetSubsystemName() == "NULL" ? true : false;
+	LastSessionSearchSettings->bIsLanQuery = IOnlineSubsystem::Get()->GetSubsystemName() == "NULL" ? true : false;
 	LastSessionSearchSettings->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 	
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
@@ -84,11 +84,10 @@ void UXMultiPlayerSessionsSubsystem::FindSessions(int32 MaxSearchResults)
 
 void UXMultiPlayerSessionsSubsystem::JoinSession(const FOnlineSessionSearchResult& SessionResult)
 {
-	if (!SessionInterfaceWeakPtr.IsValid()) {
+	if (!SessionInterface.IsValid()) {
 		MultiPlayerOnJoinSessionComplete.Broadcast(EOnJoinSessionCompleteResult::UnknownError);
 		return;
 	}
-	IOnlineSessionPtr SessionInterface = SessionInterfaceWeakPtr.Pin();
 	JoinSessionCompleteDelegateHandle = SessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate); 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 
@@ -100,11 +99,10 @@ void UXMultiPlayerSessionsSubsystem::JoinSession(const FOnlineSessionSearchResul
 
 void UXMultiPlayerSessionsSubsystem::DestroySession()
 {
-	if (!SessionInterfaceWeakPtr.IsValid()) {
+	if (!SessionInterface.IsValid()) {
 		MultiPlayerOnDestroySessionComplete.Broadcast(false);
 		return;
 	}
-	IOnlineSessionPtr SessionInterface = SessionInterfaceWeakPtr.Pin();
 
 	DestroySessionCompleteDelegateHandle = SessionInterface->AddOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegate);
 	
@@ -120,9 +118,9 @@ void UXMultiPlayerSessionsSubsystem::StartSession()
 
 void UXMultiPlayerSessionsSubsystem::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
 {
-	if (SessionInterfaceWeakPtr.IsValid())
+	if (SessionInterface.IsValid())
 	{
-		SessionInterfaceWeakPtr.Pin()->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
+		SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
 	}
 
 	MultiPlayerOnCreateSessionComplete.Broadcast(bWasSuccessful);
@@ -130,8 +128,8 @@ void UXMultiPlayerSessionsSubsystem::OnCreateSessionComplete(FName SessionName, 
 
 void UXMultiPlayerSessionsSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
 {
-	if (SessionInterfaceWeakPtr.IsValid()) {
-		SessionInterfaceWeakPtr.Pin()->ClearOnCancelFindSessionsCompleteDelegate_Handle(FindSessionsCompleteDelegateHandle);
+	if (SessionInterface.IsValid()) {
+		SessionInterface->ClearOnCancelFindSessionsCompleteDelegate_Handle(FindSessionsCompleteDelegateHandle);
 	}
 	if (LastSessionSearchSettings->SearchResults.Num() <= 0){
 		MultiPlayerOnFindSessionsComplete.Broadcast(TArray<FOnlineSessionSearchResult>(), false);
@@ -142,8 +140,8 @@ void UXMultiPlayerSessionsSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
 
 void UXMultiPlayerSessionsSubsystem::OnjoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
 {
-	if (SessionInterfaceWeakPtr.IsValid()) {
-		SessionInterfaceWeakPtr.Pin()->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
+	if (SessionInterface.IsValid()) {
+		SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
 	}
 
 	MultiPlayerOnJoinSessionComplete.Broadcast(Result);
@@ -151,8 +149,8 @@ void UXMultiPlayerSessionsSubsystem::OnjoinSessionComplete(FName SessionName, EO
 
 void UXMultiPlayerSessionsSubsystem::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
 {
-	if (SessionInterfaceWeakPtr.IsValid()) {
-		SessionInterfaceWeakPtr.Pin()->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegateHandle);
+	if (SessionInterface.IsValid()) {
+		SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegateHandle);
 	}
 	if (bWasSuccessful && bCreateSessionOnDestroy) {
 		bCreateSessionOnDestroy = false;
