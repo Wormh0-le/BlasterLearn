@@ -44,7 +44,7 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		}
 	} else if (MatchState == MatchState::Cooldown)
 	{
-		CountdownTime = CooldownTime + WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		CountdownTime = CooldownTime - (GetWorld()->GetTimeSeconds() - CooldownStartingTime);
 		if (CountdownTime <= 0.f)
 		{
 			RestartGame();
@@ -105,6 +105,11 @@ float ABlasterGameMode::CalculateDamage(AController* AttackerController, AContro
 void ABlasterGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
+	if (MatchState == MatchState::Cooldown)
+	{
+		CooldownStartingTime = GetWorld()->GetTimeSeconds();
+	}
+	
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);

@@ -90,7 +90,7 @@ void ATeamsGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter,
 		}
 		if (BlasterGameState->BlueTeamScore > WinningScores || BlasterGameState->RedTeamScore > WinningScores)
 		{
-			SetMatchState(MatchState::Cooldown);
+			DelayedCooldownMatch();
 		}
 	}
 }
@@ -119,4 +119,13 @@ void ATeamsGameMode::HandleMatchHasStarted()
 			}
 		}
 	}
+}
+
+void ATeamsGameMode::DelayedCooldownMatch()
+{
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, [this]()
+	{
+		SetMatchState(MatchState::Cooldown);
+	}, 0.2f, false);
 }

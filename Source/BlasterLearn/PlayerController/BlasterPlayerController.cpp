@@ -41,6 +41,7 @@ void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+	DOREPLIFETIME(ABlasterPlayerController, ServerCooldownStartTime);
 }
 
 void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
@@ -114,6 +115,11 @@ void ABlasterPlayerController::OnMatchStateSet(FName State)
 	{
 		HandleMatchHasStarted();
 	} else if (MatchState == MatchState::Cooldown) {
+		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
+		if (BlasterGameMode)
+		{
+			ServerCooldownStartTime = BlasterGameMode->CooldownStartingTime;
+		}
 		HandleCooldown();
 	}
 }
@@ -363,14 +369,20 @@ void ABlasterPlayerController::SetHUDTime()
 	} else if (MatchState == MatchState::InProgress) {
 		TimeLeft = WarmupTime + MatchTime - GetServerTime() + LevelStartingTime;
 	} else if (MatchState == MatchState::Cooldown) {
-		TimeLeft = CooldownTime + WarmupTime + MatchTime - GetServerTime() + LevelStartingTime;
+		TimeLeft = ServerCooldownStartTime == 0.f ? CooldownTime : CooldownTime - (GetServerTime() - ServerCooldownStartTime);
 	}
 	uint32 SecondsLeft = FMath::CeilToInt(TimeLeft);
 	
 	if (HasAuthority()) {
-		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode; 
-		if (BlasterGameMode) {
-			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime());
+		if (BlasterGameMode == nullptr)
+		{
+			BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+			LevelStartingTime = BlasterGameMode->LevelStartingTime;
+		}
+		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
+		if (BlasterGameMode)
+		{
+			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime);
 		}
 	}
 	if (CountdownInt != SecondsLeft)
@@ -381,7 +393,6 @@ void ABlasterPlayerController::SetHUDTime()
 		if (MatchState == MatchState::InProgress) {
 			SetHUDMatchCountdown(TimeLeft);
 		}
-		
 	}
 	CountdownInt = SecondsLeft;
 }
