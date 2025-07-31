@@ -44,6 +44,8 @@ public:
 
 	float LevelStartingTime = 0.f;
 
+	float CooldownStartingTime = 0.f;
+
 	bool bTeamsMatch = false;
 
 	bool bCaptureMatch = false;

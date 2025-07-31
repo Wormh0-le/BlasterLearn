@@ -20,10 +20,10 @@ protected:
 private:
 	
 	UPROPERTY(EditAnywhere)
-	float BaseSpeedBuff = 600.f;
+	float BaseSpeedBuff = 300.f;
 
 	UPROPERTY(EditAnywhere)
-	float CrouchSpeedBuff = 200.f;
+	float CrouchSpeedBuff = 100.f;
 
 	UPROPERTY(EditAnywhere)
 	float SpeedBuffTime = 30.f;

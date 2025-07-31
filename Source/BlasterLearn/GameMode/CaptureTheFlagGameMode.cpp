@@ -34,7 +34,7 @@ void ACaptureTheFlagGameMode::ZoneCaptured(AFlagZone* CapturedZone)
 			{
 				BlasterGameState->RedTeamScores();
 			}
-			SetMatchState(MatchState::Cooldown);	
+			DelayedCooldownMatch();
 		}
 	}
 }

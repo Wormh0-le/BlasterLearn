@@ -55,6 +55,9 @@ public:
 
 	float SingleTripTime = 0.f;
 
+	UPROPERTY(Replicated)
+	float ServerCooldownStartTime = 0.f;
+
 	FHighPingDelegate HighPingDelegate;
 protected:
 	virtual void BeginPlay() override;
