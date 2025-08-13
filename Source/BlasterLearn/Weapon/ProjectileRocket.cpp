@@ -31,7 +31,7 @@ void AProjectileRocket::BeginPlay()
 	}
 	
 	SpawnTrailSystem();
-	if (ProjectileLoop && ProjectileLoopComponent)
+	if (ProjectileLoop)
 	{
 		ProjectileLoopComponent = UGameplayStatics::SpawnSoundAttached(
 			ProjectileLoop,
